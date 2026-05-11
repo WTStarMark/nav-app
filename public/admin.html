@@ -1,0 +1,4966 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="adminPageTitle">导航管理后台</title>
+  <link rel="stylesheet" href="/fonts/fontawesome-free-7.1.0-web/css/all.min.css">
+  <style>
+    /* ===== CSS 变量 ===== */
+    :root {
+      --primary-color: #2d7ff9;
+      --primary-hover: #1f6ee8;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --text-color: #333333;
+      --secondary-text-color: #666666;
+      --footer-text-color: #666666;
+      --sidebar-width: 260px;
+      --header-height: 70px;
+      --transition-speed: 0.3s;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --border-radius: 12px;
+      --border-radius-lg: 20px;
+      --border-radius-xl: 30px;
+      --font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      --font-size: 16px;
+      /* 毛玻璃效果变量 */
+      --glass-opacity: 0.8;
+      --glass-blur: 10px;
+      --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+    }
+    
+    /* ===== 动画定义 ===== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes ripple {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+    
+    /* ===== 基础重置和通用样式 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: var(--font-family);
+    }
+    
+    /* ===== 进度条样式优化 ===== */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #e9ecef;
+      outline: none;
+      transition: background 0.3s ease;
+    }
+    
+    input[type="range"]:hover {
+      background: #dee2e6;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(45, 127, 249, 0.3);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.4);
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+      box-shadow: 0 6px 16px rgba(45, 127, 249, 0.5);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(45, 127, 249, 0.3);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    input[type="range"]::-moz-range-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.4);
+    }
+    
+    input[type="range"]::-moz-range-thumb:active {
+      transform: scale(1.2);
+      box-shadow: 0 6px 16px rgba(45, 127, 249, 0.5);
+    }
+    
+    body {
+      font-size: var(--font-size);
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* ===== 通用表单控件样式 ===== */
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e5eb;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      outline: none;
+      transition: all var(--transition-speed);
+      background: #fff;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+    
+    /* ===== 带图标的输入框 ===== */
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #999;
+      transition: color var(--transition-speed);
+      z-index: 1;
+    }
+    
+    .input-with-icon input {
+      width: 100%;
+      padding: 12px 16px 12px 45px;
+      border: 2px solid #e1e5eb;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      outline: none;
+      transition: all var(--transition-speed);
+      background: #fff;
+    }
+    
+    .input-with-icon input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(45, 127, 249, 0.1);
+    }
+    
+    .input-with-icon input:focus + i {
+      color: var(--primary-color);
+    }
+    
+    /* ===== 按钮样式 ===== */
+    .btn {
+      position: relative;
+      padding: 12px 35px;
+      background: var(--primary-color);
+      font-size: 17px;
+      font-weight: 500;
+      color: white;
+      border: 3px solid var(--primary-color);
+      border-radius: 8px;
+      box-shadow: 0 0 0 rgba(45, 127, 249, 0.5);
+      transition: all 0.3s ease-in-out;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+    
+    .btn-primary {
+      background: var(--primary-color);
+      color: white;
+      border: 3px solid var(--primary-color);
+    }
+    
+    .btn-secondary {
+      background: #4a90e2;
+      color: white;
+      border: 3px solid #4a90e2;
+    }
+    
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+      border: 3px solid #dc3545;
+    }
+    
+    .btn:hover {
+      background: transparent;
+      color: var(--primary-color);
+      box-shadow: 0 0 25px rgba(45, 127, 249, 0.5);
+    }
+    
+    .btn-secondary:hover {
+      background: transparent;
+      color: #4a90e2;
+      box-shadow: 0 0 25px rgba(74, 144, 226, 0.5);
+    }
+    
+    .btn-danger:hover {
+      color: #dc3545;
+      box-shadow: 0 0 25px rgba(220, 53, 69, 0.5);
+    }
+    
+    .btn-sm {
+      padding: 8px 20px;
+      font-size: 14px;
+    }
+    
+    /* ===== 星星SVG样式 ===== */
+    .star-1 {
+      position: absolute;
+      top: 20%;
+      left: 20%;
+      width: 25px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 1s cubic-bezier(0.05, 0.83, 0.43, 0.96);
+    }
+    
+    .star-2 {
+      position: absolute;
+      top: 45%;
+      left: 45%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 1s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-3 {
+      position: absolute;
+      top: 40%;
+      left: 40%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 1s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-4 {
+      position: absolute;
+      top: 20%;
+      left: 40%;
+      width: 8px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-5 {
+      position: absolute;
+      top: 25%;
+      left: 45%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 0.6s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-6 {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 0.8s ease;
+    }
+    
+    .btn:hover .star-1 {
+      position: absolute;
+      top: -80%;
+      left: -30%;
+      width: 25px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .btn:hover .star-2 {
+      position: absolute;
+      top: -25%;
+      left: 10%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .btn:hover .star-3 {
+      position: absolute;
+      top: 55%;
+      left: 25%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .btn:hover .star-4 {
+      position: absolute;
+      top: 30%;
+      left: 80%;
+      width: 8px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .btn:hover .star-5 {
+      position: absolute;
+      top: 25%;
+      left: 115%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .btn:hover .star-6 {
+      position: absolute;
+      top: 5%;
+      left: 60%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .fil0 {
+      fill: #fffdef;
+    }
+    
+    /* ===== 登录界面 ===== */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .login-box {
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--border-radius-lg);
+      padding: 50px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: var(--shadow-lg);
+      animation: fadeIn 0.6s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .login-box h2 {
+      text-align: center;
+      color: var(--text-color);
+      margin-bottom: 40px;
+      font-size: 2rem;
+      font-weight: 700;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .login-box h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+      border-radius: 2px;
+    }
+    
+    .error-msg {
+      margin-top: 15px;
+      padding: 12px;
+      background: #fee;
+      border: 1px solid #fcc;
+      border-radius: var(--border-radius);
+      color: #c33;
+      font-size: 0.9rem;
+      display: none;
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    /* ===== 管理主界面 ===== */
+    .admin-container {
+      display: none;
+      min-height: 100vh;
+    }
+    
+    /* ===== 侧边栏 ===== */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: var(--sidebar-width);
+      height: 100vh;
+      background-color: #FFFFFF;
+      color: #333333;
+      z-index: 1000;
+      overflow-y: auto;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+      transform: translateX(1px);
+      border-right: 1px solid #EEEEEE;
+      transition: all 0.3s ease;
+      padding: 10px;
+    }
+    
+    .sidebar-header {
+      padding: 25px 20px;
+      border-bottom: 1px solid #EEEEEE;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .sidebar-header h3 {
+      color: #333333;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    .menu-item {
+      font-size: 15px;
+      background-color: transparent;
+      border: none;
+      padding: 10px;
+      color: #333333;
+      display: flex;
+      align-items: center;
+      position: relative;
+      gap: 5px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+      text-decoration: none;
+    }
+    
+    .menu-item:not(:active):hover,
+    .menu-item:focus {
+      display: flex;
+      box-sizing: border-box;
+      border: 2px solid #EEEEEE;
+      color: var(--primary-color);
+      background-color: #F8F9FA;
+    }
+    
+    .menu-item:focus,
+    .menu-item:active,
+    .menu-item.active {
+      background-color: #F0F4F8;
+      outline: none;
+      margin-left: 17px;
+      color: var(--primary-color);
+    }
+    
+    .menu-item::before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: -15px;
+      width: 5px;
+      height: 80%;
+      background-color: var(--primary-color);
+      border-radius: 5px;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .menu-item:focus::before,
+    .menu-item:active::before,
+    .menu-item.active::before {
+      opacity: 1;
+    }
+    
+    .menu-item i {
+      width: 20px;
+      font-size: 1rem;
+      margin-right: 5px;
+      transition: transform var(--transition-speed);
+      color: #666666;
+    }
+    
+    .menu-item:hover i {
+      transform: scale(1.1);
+      color: var(--primary-color);
+    }
+    
+    .menu-item.active i {
+      color: var(--primary-color);
+    }
+    
+    .menu-item .badge {
+      margin-left: auto;
+      background: var(--primary-color);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      animation: pulse 2s infinite;
+    }
+    
+    .sidebar:hover > .sidebar-menu > :not(.menu-item:hover) {
+      transition: 300ms;
+      filter: blur(1.5px);
+      transform: scale(0.95, 0.95);
+    }
+    
+    /* ===== 主内容区 ===== */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    }
+    
+    /* ===== 内容卡片 ===== */
+    .content-card {
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow-md);
+      animation: fadeIn 0.6s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f5ff;
+    }
+    
+    .card-header h3 {
+      color: var(--text-color);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    /* ===== 控制面板优化 ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+    
+    .stat-card {
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow-md);
+      transition: all var(--transition-speed);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-color);
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 6px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--primary-color), var(--primary-hover));
+    }
+    
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--border-radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+      background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+      color: white;
+      box-shadow: 0 4px 15px rgba(45, 127, 249, 0.3);
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-color);
+      line-height: 1;
+      margin-bottom: 5px;
+      background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .stat-subtitle {
+      color: var(--secondary-text-color);
+      font-size: 0.9rem;
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--success-color);
+      position: relative;
+    }
+    
+    .status-dot::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 50%;
+      background: var(--success-color);
+      opacity: 0.4;
+      animation: pulse 2s infinite;
+    }
+    
+    /* ===== 颜色预览块 ===== */
+    .color-preview {
+      width: 60px;
+      height: 40px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .color-preview:hover {
+      transform: scale(1.05);
+    }
+    
+    .color-input-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .color-input-group input[type="text"] {
+      flex: 1;
+    }
+    
+    /* ===== 字体设置 ===== */
+    .font-preview-list {
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      border: 2px solid #e1e5eb;
+      border-radius: var(--border-radius);
+      padding: 10px;
+    }
+    
+    .font-option {
+      padding: 15px;
+      margin: 8px 0;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      border: 2px solid transparent;
+      background: white;
+    }
+    
+    .font-option:hover {
+      background: #f8f9fa;
+      border-color: #dee2e6;
+    }
+    
+    .font-option.selected {
+      border-color: var(--primary-color);
+      background: #f0f5ff;
+    }
+    
+    .font-preview-text {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+    }
+    
+    .font-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    /* ===== 自定义字体上传区域 ===== */
+    .font-upload-area {
+      border: 2px dashed #ced4da;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      background: #f8f9fa;
+      margin-top: 20px;
+    }
+    
+    .font-upload-area:hover {
+      border-color: var(--primary-color);
+      background: #f0f5ff;
+    }
+    
+    .font-upload-area i {
+      font-size: 2.5rem;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+    
+    /* ===== 图标选择网格 ===== */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      border: 2px solid #e1e5eb;
+      border-radius: var(--border-radius);
+    }
+    
+    @media (max-width: 1200px) {
+      .icon-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+    
+    @media (max-width: 992px) {
+      .icon-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .icon-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      background: white;
+      border: 2px solid transparent;
+    }
+    
+    .icon-item:hover {
+      border-color: #dee2e6;
+      background: #f8f9fa;
+      transform: translateY(-3px);
+    }
+    
+    .icon-item.selected {
+      border-color: var(--primary-color);
+      background: #f0f5ff;
+    }
+    
+    .icon-item i {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      margin-bottom: 8px;
+    }
+    
+    .icon-name {
+      font-size: 0.8rem;
+      color: #666;
+      text-align: center;
+      word-break: break-all;
+    }
+    
+    /* ===== 已上传图标列表 ===== */
+    .uploaded-icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .uploaded-icon-item {
+      position: relative;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      border: 2px solid #e1e5eb;
+      transition: all var(--transition-speed);
+    }
+    
+    .uploaded-icon-item:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-3px);
+    }
+    
+    .uploaded-icon-preview {
+      width: 100%;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+    }
+    
+    .uploaded-icon-preview img {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+    
+    .uploaded-icon-info {
+      padding: 8px;
+      background: white;
+      text-align: center;
+    }
+    
+    .uploaded-icon-name {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .delete-icon-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--danger-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      opacity: 0;
+      transition: opacity var(--transition-speed);
+    }
+    
+    .uploaded-icon-item:hover .delete-icon-btn {
+      opacity: 1;
+    }
+    
+    /* ===== 服务管理 ===== */
+    .service-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .service-item {
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--border-radius);
+      padding: 20px;
+      margin-bottom: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transition: all var(--transition-speed);
+    }
+    
+    .service-item:hover {
+      border-color: #dee2e6;
+      background: var(--glass-gradient);
+    }
+    
+    .service-item.expanded {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, rgba(240, 245, 255, 0.8), rgba(240, 245, 255, 0.4));
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+    }
+    
+    .service-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+    
+    .service-header h4 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+    
+    .service-header h4 i {
+      color: var(--primary-color);
+      font-size: 1.2rem;
+    }
+    
+    .service-actions-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .service-details {
+      display: none;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .service-details.expanded {
+      display: block;
+    }
+    
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    
+    /* ===== 消息提示 ===== */
+    #messageContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+    
+    .message {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 15px 20px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-lg);
+      animation: slideInRight 0.3s ease-out;
+      border-left: 4px solid var(--primary-color);
+      min-width: 300px;
+    }
+    
+    .message.success {
+      border-left-color: var(--success-color);
+    }
+    
+    .message.error {
+      border-left-color: var(--danger-color);
+    }
+    
+    .message.info {
+      border-left-color: var(--warning-color);
+    }
+    
+    .message-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .message-content i {
+      font-size: 1.2rem;
+    }
+    
+    .message.success i {
+      color: var(--success-color);
+    }
+    
+    .message.error i {
+      color: var(--danger-color);
+    }
+    
+    .message.info i {
+      color: var(--warning-color);
+    }
+    
+    .message-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+    
+    .message-actions button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .message-actions button:hover {
+      transform: translateY(-1px);
+    }
+    
+    .message-actions .btn-undo {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .message-actions .btn-undo:hover {
+      background: var(--primary-hover);
+    }
+    
+    .message-actions .btn-dismiss {
+      background: #f8f9fa;
+      color: #666;
+      border: 1px solid #dee2e6;
+    }
+    
+    .message-actions .btn-dismiss:hover {
+      background: #e9ecef;
+    }
+    
+    /* ===== 确认对话框 ===== */
+    .confirm-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    .confirm-dialog-content {
+      background: white;
+      border-radius: var(--border-radius-lg);
+      padding: 30px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: var(--shadow-lg);
+      animation: slideIn 0.3s ease-out;
+    }
+    
+    .confirm-dialog-header {
+      margin-bottom: 20px;
+    }
+    
+    .confirm-dialog-header h3 {
+      color: #333;
+      margin: 0;
+    }
+    
+    .confirm-dialog-body {
+      margin-bottom: 25px;
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    .confirm-dialog-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    .confirm-dialog-actions button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .confirm-dialog-actions .btn-cancel {
+      background: #f8f9fa;
+      color: #666;
+      border: 1px solid #dee2e6;
+    }
+    
+    .confirm-dialog-actions .btn-cancel:hover {
+      background: #e9ecef;
+    }
+    
+    .confirm-dialog-actions .btn-confirm {
+      background: var(--danger-color);
+      color: white;
+    }
+    
+    .confirm-dialog-actions .btn-confirm:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* ===== 响应式设计 ===== */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 70px;
+      }
+      
+      .sidebar-header h3,
+      .menu-item span {
+        display: none;
+      }
+      
+      .menu-item {
+        justify-content: center;
+        padding: 15px;
+      }
+      
+      .menu-item i {
+        margin-right: 0;
+      }
+      
+      .main-content {
+        margin-left: 70px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .content-card {
+        padding: 20px;
+      }
+      
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .header-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      
+      .service-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .service-actions .btn {
+        width: 100%;
+      }
+    }
+    
+    /* ===== 内容区域切换 ===== */
+    .content-section {
+      display: none;
+    }
+    
+    /* ===== 自定义图标上传 ===== */
+    .file-upload-area {
+      border: 3px dashed #e1e5eb;
+      border-radius: var(--border-radius-lg);
+      padding: 50px 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    
+    .file-upload-area::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(45, 127, 249, 0.1), transparent);
+      transform: rotate(45deg);
+      transition: all 0.6s ease;
+      opacity: 0;
+    }
+    
+    .file-upload-area:hover {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, #e8f4ff 0%, #d4e7ff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(45, 127, 249, 0.15);
+    }
+    
+    .file-upload-area:hover::before {
+      opacity: 1;
+      animation: shine 1.5s ease-in-out;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    .file-upload-area.dragover {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, #e8f4ff 0%, #d4e7ff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(45, 127, 249, 0.15);
+    }
+    
+    .file-upload-area i {
+      font-size: 4rem;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: block;
+    }
+    
+    .file-upload-area:hover i {
+      transform: scale(1.15) rotate(10deg);
+    }
+    
+    .file-upload-area h4 {
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 1.2rem;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    
+    .file-upload-area:hover h4 {
+      color: var(--primary-color);
+    }
+    
+    .file-upload-area p {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      transition: color 0.3s ease;
+    }
+    
+    .file-upload-area:hover p {
+      color: #555;
+    }
+    
+    .upload-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+      color: white;
+      border: none;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 15px;
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.2);
+    }
+    
+    .upload-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(45, 127, 249, 0.3);
+    }
+    
+    /* ===== 上传进度条 ===== */
+    .upload-progress {
+      width: 100%;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .upload-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    
+    .upload-progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      animation: progress-shine 1.5s infinite;
+    }
+    
+    @keyframes progress-shine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    /* ===== 上传状态 ===== */
+    .upload-status {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #666;
+      display: none;
+    }
+    
+    .upload-status.success {
+      color: var(--success-color);
+    }
+    
+    .upload-status.error {
+      color: var(--danger-color);
+    }
+    
+    /* ===== 已上传图标预览 ===== */
+    .uploaded-icons-preview {
+      margin-top: 30px;
+    }
+    
+    .uploaded-icons-preview h4 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .uploaded-icons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 20px;
+    }
+    
+    .uploaded-icon-card {
+      background: white;
+      border: 2px solid #e1e5eb;
+      border-radius: var(--border-radius);
+      padding: 15px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .uploaded-icon-card:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 24px rgba(45, 127, 249, 0.15);
+    }
+    
+    .uploaded-icon-preview {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+    
+    .uploaded-icon-preview img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+    
+    .uploaded-icon-card:hover .uploaded-icon-preview img {
+      transform: scale(1.1);
+    }
+    
+    .uploaded-icon-name {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 10px;
+    }
+    
+    .icon-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .uploaded-icon-card:hover .icon-actions {
+      opacity: 1;
+    }
+    
+    .icon-action-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.8rem;
+    }
+    
+    .icon-action-btn.copy {
+      background: var(--primary-color);
+      color: white;
+    }
+    
+    .icon-action-btn.delete {
+      background: var(--danger-color);
+      color: white;
+    }
+    
+    .icon-action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* ===== 响应式设计 ===== */
+    @media (max-width: 768px) {
+      .file-upload-area {
+        padding: 40px 20px;
+      }
+      
+      .file-upload-area i {
+        font-size: 3rem;
+      }
+      
+      .uploaded-icons-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 15px;
+      }
+      
+      .uploaded-icon-preview {
+        width: 60px;
+        height: 60px;
+      }
+    }
+    
+    /* 开关控件样式 */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+    }
+    
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+    
+    input:focus + .slider {
+      box-shadow: 0 0 1px var(--primary-color);
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    
+    .slider.round {
+      border-radius: 34px;
+    }
+    
+    .slider.round:before {
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <!-- 登录界面 -->
+  <div class="login-container" id="loginContainer">
+    <div class="login-box">
+      <h2 id="loginTitle">导航管理后台</h2>
+      <div class="form-group">
+        <div class="input-with-icon">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="请输入管理密码" autocomplete="off">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="login()">
+        <i class="fas fa-sign-in-alt"></i> 登录
+      </button>
+      <div class="error-msg" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- 管理主界面 -->
+  <div class="admin-container" id="adminContainer">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3 id="adminNavTitle">导航管理后台</h3>
+      </div>
+      <div class="sidebar-menu">
+        <a href="#" class="menu-item active" onclick="switchSection('dashboard')">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>控制面板</span>
+        </a>
+        <a href="#" class="menu-item" onclick="switchSection('password')">
+          <i class="fas fa-key"></i>
+          <span>密码管理</span>
+        </a>
+
+        <a href="#" class="menu-item" onclick="switchSection('theme')">
+          <i class="fas fa-palette"></i>
+          <span>主题设置</span>
+        </a>
+        <a href="#" class="menu-item" onclick="switchSection('service')">
+          <i class="fas fa-server"></i>
+          <span>服务管理</span>
+          <span class="badge" id="serviceCount">0</span>
+        </a>
+        <a href="#" class="menu-item" onclick="switchSection('icon')">
+          <i class="fas fa-icons"></i>
+          <span>图标管理</span>
+        </a>
+        <a href="#" class="menu-item" onclick="switchSection('backup')">
+          <i class="fas fa-database"></i>
+          <span>备份管理</span>
+        </a>
+        <a href="#" class="menu-item" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>退出登录</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+      <!-- 控制面板 -->
+      <div id="dashboardSection" class="content-section">
+        <div class="content-card">
+          <div class="card-header">
+            <h3 id="adminContentTitle">服务导航管理中心</h3>
+            <div class="header-actions">
+              <button class="btn btn-sm btn-primary" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> 刷新数据
+              </button>
+            </div>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-server"></i>
+              </div>
+              <div class="stat-content">
+                <h3>当前服务数</h3>
+                <div class="stat-value" id="serviceStat">0</div>
+                <p class="stat-subtitle">已配置的服务数量</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-icons"></i>
+              </div>
+              <div class="stat-content">
+                <h3>图标总数</h3>
+                <div class="stat-value" id="iconStat">0</div>
+                <p class="stat-subtitle">可用的图标数量</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <h3>系统状态</h3>
+                <div class="status-indicator">
+                  <div class="status-dot"></div>
+                  <span class="stat-value">运行中</span>
+                </div>
+                <p class="stat-subtitle">服务正常运行</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="content-card">
+          <div class="card-header">
+            <h3>快速操作</h3>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <button class="btn btn-sm btn-primary" onclick="switchSection('service')">
+              <i class="fas fa-plus"></i> 添加新服务
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="switchSection('icon')">
+              <i class="fas fa-sync-alt"></i> 更新图标
+            </button>
+
+            <button class="btn btn-sm btn-primary" onclick="switchSection('theme')">
+              <i class="fas fa-paint-brush"></i> 主题设置
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 密码管理 -->
+      <div id="passwordSection" class="content-section" style="display: none;">
+        <div class="content-card">
+          <div class="card-header">
+            <h3>密码管理</h3>
+          </div>
+          
+          <div class="form-group">
+            <label>原密码</label>
+            <div class="input-with-icon">
+              <i class="fas fa-key"></i>
+              <input type="password" id="oldPwd" placeholder="请输入当前管理密码">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>新密码</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="newPwd" placeholder="支持特殊字符，建议不少于6位">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>确认新密码</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="confirmPwd" placeholder="再次输入新密码">
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" onclick="changePassword()">
+            <i class="fas fa-save"></i> 修改密码
+          </button>
+        </div>
+      </div>
+
+      <!-- 标题设置 -->
+
+
+      <!-- 主题设置 - 修复字体设置部分 -->
+      <div id="themeSection" class="content-section" style="display: none;">
+        <div class="content-card">
+          <div class="card-header">
+            <h3>颜色设置</h3>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="form-group">
+              <label>主色调</label>
+              <div class="color-input-group">
+                <input type="color" id="primaryColor" class="color-preview">
+                <input type="text" id="primaryColorText" class="form-control" value="#2d7ff9">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>悬浮色</label>
+              <div class="color-input-group">
+                <input type="color" id="primaryHoverColor" class="color-preview">
+                <input type="text" id="primaryHoverColorText" class="form-control" value="#1f6ee8">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>背景色</label>
+              <div class="color-input-group">
+                <input type="color" id="backgroundColor" class="color-preview">
+                <input type="text" id="backgroundColorText" class="form-control" value="#f5f7fa">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 字体设置 - 修复字体切换 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>字体设置</h3>
+          </div>
+          
+          <div class="form-group">
+            <label>选择字体</label>
+            <div class="font-preview-list" id="fontList">
+              <!-- 字体选项将由JavaScript动态生成 -->
+            </div>
+          </div>
+          
+          <!-- 自定义字体上传 -->
+          <div class="font-upload-area" id="fontUploadArea" onclick="document.getElementById('fontFileInput').click()">
+            <i class="fas fa-file-upload"></i>
+            <h4>上传自定义字体</h4>
+            <p>支持 TTF、OTF、WOFF、WOFF2 格式，最大 30MB</p>
+            <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
+          </div>
+          
+          <div class="form-group">
+            <label>字体大小</label>
+            <select id="fontSize" class="form-control">
+              <option value="14px">14px（小）</option>
+              <option value="16px" selected>16px（默认）</option>
+              <option value="18px">18px（中）</option>
+              <option value="20px">20px（大）</option>
+              <option value="22px">22px（特大）</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>字体粗细</label>
+            <select id="fontWeight" class="form-control">
+              <option value="normal">正常</option>
+              <option value="500">中等</option>
+              <option value="600" selected>半粗体</option>
+              <option value="700">粗体</option>
+              <option value="800">特粗</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>阴影设置</label>
+            <input type="text" id="cardShadow" class="form-control" value="0 4px 12px rgba(0, 0, 0, 0.08)" placeholder="CSS阴影样式" oninput="updateShadowPreview()">
+            <div style="margin-top: 10px;">
+              <label>阴影强度：<span id="shadowIntensityValue">8%</span></label>
+              <input type="range" id="shadowIntensity" min="1" max="20" value="8" style="width: 100%;" oninput="updateShadowIntensity(this.value)">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>悬浮阴影</label>
+            <input type="text" id="cardHoverShadow" class="form-control" value="0 8px 20px rgba(0, 0, 0, 0.12)" placeholder="卡片悬浮时的阴影" oninput="updateShadowPreview()">
+            <div style="margin-top: 10px;">
+              <label>悬浮阴影强度：<span id="hoverShadowIntensityValue">12%</span></label>
+              <input type="range" id="hoverShadowIntensity" min="5" max="30" value="12" style="width: 100%;" oninput="updateHoverShadowIntensity(this.value)">
+            </div>
+          </div>
+          
+          <!-- 阴影效果实时预览 -->
+          <div class="form-group">
+            <label>阴影效果预览</label>
+            <div id="shadowPreview" style="
+              width: 100%;
+              height: 150px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-top: 10px;
+            ">
+              <div id="previewCard" style="
+                width: 200px;
+                height: 100px;
+                background: white;
+                border-radius: var(--border-radius);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all var(--transition-speed);
+              ">
+                <div style="text-align: center;">
+                  <i class="fas fa-card" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 10px;"></i>
+                  <p>预览卡片</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 毛玻璃效果设置 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>毛玻璃效果设置</h3>
+          </div>
+          
+          <div class="form-group">
+            <label>不透明度：<span id="glassOpacityValue">80%</span></label>
+            <input type="range" id="glassOpacity" min="0" max="100" value="80" oninput="updateGlassOpacity(this.value)">
+          </div>
+          
+          <div class="form-group">
+            <label>模糊程度：<span id="glassBlurValue">10px</span></label>
+            <input type="range" id="glassBlur" min="0" max="30" value="10" oninput="updateGlassBlur(this.value)">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="form-group">
+              <label>渐变颜色1</label>
+              <div class="color-input-group">
+                <input type="color" id="glassColor1" class="color-preview" value="#ffffff">
+                <input type="text" id="glassColor1Text" class="form-control" value="#ffffff" onchange="updateGlassGradient()">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>渐变颜色2</label>
+              <div class="color-input-group">
+                <input type="color" id="glassColor2" class="color-preview" value="#ffffff">
+                <input type="text" id="glassColor2Text" class="form-control" value="#ffffff" onchange="updateGlassGradient()">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>毛玻璃效果预览</label>
+            <div id="glassPreview" style="
+              width: 100%;
+              height: 200px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-top: 20px;
+              background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+              border-radius: var(--border-radius);
+              position: relative;
+            ">
+              <div id="previewGlassCard" style="
+                width: 300px;
+                height: 150px;
+                background: var(--glass-gradient);
+                backdrop-filter: blur(var(--glass-blur));
+                -webkit-backdrop-filter: blur(var(--glass-blur));
+                border-radius: var(--border-radius);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                box-shadow: var(--shadow-md);
+              ">
+                <div style="text-align: center;">
+                  <i class="fas fa-magic" style="font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px;"></i>
+                  <p>毛玻璃效果预览</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 背景设置 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>背景设置</h3>
+          </div>
+          
+          <div class="form-group">
+            <label>背景不透明度：<span id="backgroundOpacityValue">100%</span></label>
+            <input type="range" id="backgroundOpacity" min="0" max="100" value="100" oninput="updateBackgroundOpacity(this.value)">
+          </div>
+          
+          <div class="form-group">
+            <label>背景显示优先级</label>
+            <select id="backgroundPriority" class="form-control" onchange="updateBackgroundPriority(this.value)">
+              <option value="video">视频优先</option>
+              <option value="image">图片优先</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>静态背景图片</label>
+            <div class="file-upload-area" onclick="document.getElementById('backgroundImageInput').click()">
+              <i class="fas fa-image"></i>
+              <h4>上传背景图片</h4>
+              <p>支持 JPG、PNG、WEBP 格式，建议分辨率 1920x1080</p>
+              <input type="file" id="backgroundImageInput" accept=".jpg,.jpeg,.png,.webp" style="display: none;" onchange="uploadBackgroundImage(this.files)">
+            </div>
+            <div class="upload-progress" id="backgroundImageProgress"></div>
+            <div class="upload-status" id="backgroundImageStatus"></div>
+            <div id="backgroundImagePreview" style="margin-top: 20px; text-align: center;"></div>
+          </div>
+          
+          <div class="form-group">
+            <label>动态背景视频</label>
+            <div class="file-upload-area" onclick="document.getElementById('backgroundVideoInput').click()">
+              <i class="fas fa-video"></i>
+              <h4>上传背景视频 (MP4)</h4>
+              <p>支持 MP4 格式，建议分辨率 1920x1080，大小不超过 200MB</p>
+              <input type="file" id="backgroundVideoInput" accept=".mp4" style="display: none;" onchange="uploadBackgroundVideo(this.files)">
+            </div>
+            <div class="upload-progress" id="backgroundVideoProgress"></div>
+            <div class="upload-status" id="backgroundVideoStatus"></div>
+            <div id="backgroundVideoPreview" style="margin-top: 20px; text-align: center;"></div>
+          </div>
+          
+          <div class="form-group" style="margin-top: 30px;">
+            <button class="btn btn-danger" onclick="clearBackground()">
+              <i class="fas fa-trash"></i> 清除背景
+            </button>
+            <p style="margin-top: 10px; color: #666; font-size: 0.9rem;">点击此按钮将清除当前设置的背景图片和视频，恢复到默认背景状态</p>
+          </div>
+        </div>
+        
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; gap: 10px;">
+          <button class="btn btn-danger" onclick="restoreDefaultTheme()" style="padding: 12px 24px; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">
+            <i class="fas fa-undo"></i> 恢复默认
+          </button>
+          <button class="btn btn-primary" onclick="saveTheme()" style="padding: 12px 24px; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 12px rgba(45, 127, 249, 0.3);">
+            <i class="fas fa-save"></i> 保存配置
+          </button>
+        </div>
+      </div>
+
+      <!-- 服务管理 - 修复展开/收起功能 -->
+      <div id="serviceSection" class="content-section" style="display: none;">
+        <div class="content-card">
+          <div class="card-header">
+            <h3>服务管理</h3>
+            <div class="header-actions">
+              <button class="btn btn-sm btn-primary" onclick="addService()">
+                <i class="fas fa-plus"></i> 添加服务
+              </button>
+            </div>
+          </div>
+          
+          <div class="service-actions">
+            <button class="btn btn-sm btn-primary" onclick="toggleAllServices(true)" id="expandAllBtn">
+              <i class="fas fa-expand"></i> 展开全部
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="toggleAllServices(false)" id="collapseAllBtn">
+              <i class="fas fa-compress"></i> 收起全部
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="exportServices()">
+              <i class="fas fa-download"></i> 导出服务
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="document.getElementById('serviceImportInput').click()">
+              <i class="fas fa-upload"></i> 导入服务
+              <input type="file" id="serviceImportInput" accept=".json" style="display: none;" onchange="importServices(this.files)">
+            </button>
+          </div>
+          
+          <div id="serviceListContainer">
+            <!-- 服务列表将由JavaScript动态生成 -->
+          </div>
+          
+          <div style="margin-top: 30px;">
+            <button class="btn btn-primary" onclick="saveServices()">
+              <i class="fas fa-save"></i> 保存所有服务
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图标管理 -->
+      <div id="iconSection" class="content-section" style="display: none;">
+        <div class="content-card">
+          <div class="card-header">
+            <h3>Font Awesome 图标选择</h3>
+          </div>
+          
+          <!-- 图标预览框 -->
+          <div class="icon-preview-box" id="faIconPreview" style="
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #f0f5ff 0%, #e8f0ff 100%);
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            border: 2px solid rgba(45, 127, 249, 0.2);
+            transition: all var(--transition-speed);
+          ">
+            <i class="fas fa-cloud" style="font-size: 4rem; color: var(--primary-color);"></i>
+          </div>
+          
+          <div class="form-group" style="text-align: center;">
+            <input type="text" id="faIconInput" class="form-control" placeholder="输入FA图标类名，如: fas fa-cloud" style="max-width: 300px; margin: 0 auto;">
+            <button class="btn btn-sm btn-primary" onclick="previewFaIcon()" style="margin-top: 15px;">
+              <i class="fas fa-eye"></i> 预览图标
+            </button>
+          </div>
+        </div>
+        
+        <!-- 图标选择网格 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>图标库</h3>
+            <div class="header-actions">
+              <button class="btn btn-sm btn-primary" onclick="loadLocalFontAwesomeIcons()">
+                <i class="fas fa-sync-alt"></i> 加载本地图标
+              </button>
+            </div>
+          </div>
+          
+          <div class="icon-grid" id="iconsGrid">
+            <!-- 图标将由JavaScript动态生成 -->
+          </div>
+        </div>
+        
+
+      </div>
+
+      <!-- 备份管理 -->
+      <div id="backupSection" class="content-section" style="display: none;">
+        <!-- 备份配置 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>备份配置</h3>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="form-group">
+              <label>最大备份数量</label>
+              <div class="input-with-icon">
+                <i class="fas fa-database"></i>
+                <input type="number" id="maxBackups" class="form-control" min="1" max="100" value="50">
+              </div>
+              <p style="margin-top: 5px; color: #666; font-size: 0.9rem;">设置自动保留的最大备份文件数量</p>
+            </div>
+            
+            <div class="form-group">
+              <label>备份间隔（分钟）</label>
+              <div class="input-with-icon">
+                <i class="fas fa-clock"></i>
+                <input type="number" id="backupInterval" class="form-control" min="1" max="1440" value="60">
+              </div>
+              <p style="margin-top: 5px; color: #666; font-size: 0.9rem;">设置定时备份的时间间隔</p>
+            </div>
+          </div>
+          
+          <div class="button-row" style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveBackupConfig()">
+              <i class="fas fa-save"></i> 保存备份配置
+            </button>
+            <button class="btn btn-secondary" onclick="loadBackupConfig()">
+              <i class="fas fa-sync-alt"></i> 刷新配置
+            </button>
+          </div>
+        </div>
+        
+        <!-- 备份操作 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>备份操作</h3>
+          </div>
+          
+          <div class="service-actions">
+            <button class="btn btn-primary" onclick="exportBackup()">
+              <i class="fas fa-download"></i> 手动导出备份
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('backupImportInput').click()">
+              <i class="fas fa-upload"></i> 导入备份
+              <input type="file" id="backupImportInput" accept=".json" style="display: none;" onchange="importBackup(this.files)">
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="performManualBackup()">
+              <i class="fas fa-save"></i> 立即创建备份
+            </button>
+          </div>
+        </div>
+        
+        <!-- 备份列表 -->
+        <div class="content-card">
+          <div class="card-header">
+            <h3>备份列表</h3>
+            <div class="header-actions">
+              <button class="btn btn-sm btn-primary" onclick="loadBackupList()">
+                <i class="fas fa-sync-alt"></i> 刷新列表
+              </button>
+            </div>
+          </div>
+          
+          <div id="backupList" style="margin-top: 20px;">
+            <div style="text-align: center; color: #666; padding: 40px;">
+              <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 20px;"></i>
+              <p>暂无备份文件</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 消息提示容器 -->
+  <div id="messageContainer"></div>
+
+  <!-- 图标库选择面板 -->
+  <div id="iconLibraryPanel" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 10000; display: none; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: var(--border-radius-lg); padding: 30px; width: 90%; max-width: 1000px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f5ff; padding-bottom: 15px;">
+        <h3 style="margin: 0; color: var(--primary-color);">图标库选择</h3>
+        <button class="btn btn-sm btn-danger" onclick="closeIconLibrary()">
+          <i class="fas fa-times"></i> 关闭
+        </button>
+      </div>
+      
+      <div style="display: flex; gap: 20px; flex: 1; overflow: hidden;">
+        <!-- 左侧筛选面板 -->
+        <div style="width: 250px; border-right: 1px solid #e1e5eb; padding-right: 15px; overflow-y: auto;">
+          <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 10px; font-size: 1rem;">搜索图标</h4>
+            <input type="text" id="iconSearchInput" class="form-control" placeholder="输入图标名称搜索" oninput="searchIcons()">
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 10px; font-size: 1rem;">图标风格</h4>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="radio" name="iconStyle" value="all" checked onchange="filterIcons()">
+                <span>全部风格</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="radio" name="iconStyle" value="fas" onchange="filterIcons()">
+                <span><i class="fas fa-bold"></i> Solid</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="radio" name="iconStyle" value="far" onchange="filterIcons()">
+                <span><i class="far fa-regular"></i> Regular</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="radio" name="iconStyle" value="fab" onchange="filterIcons()">
+                <span><i class="fab fa-brands"></i> Brands</span>
+              </label>
+            </div>
+          </div>
+          
+          <div>
+            <h4 style="margin-bottom: 10px; font-size: 1rem;">图标分类</h4>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" name="iconCategory" value="all" checked onchange="filterIcons()">
+                <span>全部分类</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" name="iconCategory" value="communication" onchange="filterIcons()">
+                <span>通讯</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" name="iconCategory" value="technology" onchange="filterIcons()">
+                <span>技术</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" name="iconCategory" value="business" onchange="filterIcons()">
+                <span>商务</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" name="iconCategory" value="social" onchange="filterIcons()">
+                <span>社交</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="checkbox" name="iconCategory" value="media" onchange="filterIcons()">
+                <span>媒体</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 右侧图标网格 -->
+        <div style="flex: 1; overflow-y: auto;">
+          <div id="iconLibraryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; padding: 10px;">
+            <!-- 图标将由JavaScript动态生成 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 底部操作区 -->
+      <div style="margin-top: 20px; border-top: 2px solid #f0f5ff; padding-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <div>
+            <h5 style="margin: 0 0 5px 0; font-size: 0.9rem;">选中图标</h5>
+            <div id="selectedIconPreview" style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-cloud" style="font-size: 2rem; color: var(--primary-color);"></i>
+              <span id="selectedIconClass" style="font-family: monospace;">fas fa-cloud</span>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-sm btn-secondary" onclick="closeIconLibrary()">
+            <i class="fas fa-times"></i> 取消
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="confirmIconSelection()">
+            <i class="fas fa-check"></i> 确认选择
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 全局变量 =====
+    let currentConfig = {
+      theme: {},
+      services: [],
+      customFonts: []
+    };
+    
+    let serviceList = [];
+    let isLoggedIn = localStorage.getItem('nav_admin_logged_in') === 'true';
+    
+    // ===== 按钮星星效果 =====
+    function addStarsToButtons() {
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach(button => {
+        // 检查按钮是否已经有星星元素
+        if (!button.querySelector('.star-1')) {
+          const starsHTML = `
+            <div class="star-1">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-2">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-3">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-4">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-5">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-6">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+          `;
+          button.insertAdjacentHTML('beforeend', starsHTML);
+        }
+      });
+    }
+    
+    // 页面加载完成后添加星星SVG元素
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始加载时添加星星
+      addStarsToButtons();
+      
+      // 监听DOM变化，为动态添加的按钮也添加星星
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            // 检查是否有新的按钮被添加
+            const newButtons = mutation.target.querySelectorAll('.btn:not(:has(.star-1))');
+            if (newButtons.length > 0) {
+              addStarsToButtons();
+            }
+          }
+        });
+      });
+      
+      // 开始观察整个文档
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    });
+    
+    // 常用Font Awesome图标（默认）
+    let defaultIcons = [
+      'fas fa-cloud', 'fas fa-server', 'fas fa-globe', 'fas fa-link', 'fas fa-home',
+      'fas fa-wifi', 'fas fa-database', 'fas fa-code', 'fas fa-terminal', 'fas fa-laptop',
+      'fas fa-desktop', 'fas fa-mobile-alt', 'fas fa-tablet-alt', 'fas fa-network-wired', 'fas fa-satellite',
+      'fas fa-file', 'fas fa-folder', 'fas fa-save', 'fas fa-upload', 'fas fa-download',
+      'fas fa-cog', 'fas fa-sliders-h', 'fas fa-tools', 'fas fa-wrench', 'fas fa-key',
+      'fas fa-lock', 'fas fa-unlock', 'fas fa-user', 'fas fa-users', 'fas fa-shield-alt'
+    ];
+    
+    // ===== 消息提示函数 =====
+    function showMessage(type, text, duration = 3000, actions = null) {
+      const container = document.getElementById('messageContainer');
+      const message = document.createElement('div');
+      
+      message.className = `message ${type}`;
+      
+      let html = `
+        <div class="message-content">
+          <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'exclamation-triangle'}"></i>
+          <span>${text}</span>
+        </div>
+      `;
+      
+      // 添加操作按钮
+      if (actions) {
+        html += '<div class="message-actions">';
+        actions.forEach(action => {
+          html += `
+            <button class="${action.className}" onclick="${action.onclick}">
+              ${action.text}
+            </button>
+          `;
+        });
+        html += '</div>';
+      }
+      
+      message.innerHTML = html;
+      container.appendChild(message);
+      
+      // 如果没有操作按钮，自动消失
+      if (!actions) {
+        setTimeout(() => {
+          message.style.opacity = '0';
+          message.style.transform = 'translateX(100%)';
+          setTimeout(() => message.remove(), 300);
+        }, duration);
+      }
+    }
+    
+    // 显示确认对话框
+    function showConfirmDialog(title, message, onConfirm, onCancel = null) {
+      const dialog = document.createElement('div');
+      dialog.className = 'confirm-dialog';
+      dialog.id = 'confirmDialog';
+      
+      dialog.innerHTML = `
+        <div class="confirm-dialog-content">
+          <div class="confirm-dialog-header">
+            <h3>${title}</h3>
+          </div>
+          <div class="confirm-dialog-body">
+            ${message}
+          </div>
+          <div class="confirm-dialog-actions">
+            <button class="btn-cancel" onclick="document.getElementById('confirmDialog').remove(); ${onCancel ? onCancel : ''}">
+              取消
+            </button>
+            <button class="btn-confirm" onclick="document.getElementById('confirmDialog').remove(); ${onConfirm}">
+              确认
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(dialog);
+    }
+    
+    // 撤销删除的字体
+    async function undoDeleteFont(fontData) {
+      try {
+        // 重新上传字体文件
+        const formData = new FormData();
+        // 这里需要重新获取字体文件，实际应用中可能需要保存文件内容
+        // 这里简化处理，直接重新添加到配置中
+        
+        // 读取当前配置
+        const res = await fetch('/api/config');
+        const { code, data } = await res.json();
+        
+        if (code === 200) {
+          const config = data;
+          if (!config.theme) config.theme = {};
+          if (!config.theme.customFonts) config.theme.customFonts = [];
+          
+          // 添加回字体
+          config.theme.customFonts.push(fontData);
+          
+          // 保存配置
+          const saveRes = await fetch('/api/save-theme', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme: config.theme })
+          });
+          
+          const saveResult = await saveRes.json();
+          if (saveResult.code === 200) {
+            // 重新加载字体列表
+            await loadFonts();
+            updateFontList();
+            showMessage('success', '字体已恢复');
+          } else {
+            showMessage('error', '恢复字体失败');
+          }
+        }
+      } catch (err) {
+        console.error('恢复字体失败:', err);
+        showMessage('error', '恢复字体失败，请重试');
+      }
+    }
+    
+    // 清除背景
+    async function clearBackground() {
+      showConfirmDialog(
+        '确认清除背景',
+        '确定要清除当前设置的背景图片和视频吗？这将恢复到默认背景状态。',
+        'performClearBackground()'
+      );
+    }
+    
+    // 执行清除背景操作
+    async function performClearBackground() {
+      try {
+        // 清除预览
+        document.getElementById('backgroundImagePreview').innerHTML = '';
+        document.getElementById('backgroundVideoPreview').innerHTML = '';
+        
+        // 重置文件输入框，确保可以再次上传文件
+        document.getElementById('backgroundImageInput').value = '';
+        document.getElementById('backgroundVideoInput').value = '';
+        
+        // 清除上传状态
+        document.getElementById('backgroundImageProgress').style.display = 'none';
+        document.getElementById('backgroundImageStatus').style.display = 'none';
+        document.getElementById('backgroundVideoProgress').style.display = 'none';
+        document.getElementById('backgroundVideoStatus').style.display = 'none';
+        
+        // 更新当前配置
+        if (currentConfig.theme) {
+          currentConfig.theme.backgroundImage = '';
+          currentConfig.theme.backgroundVideo = '';
+        }
+        
+        // 保存主题配置
+        const theme = {
+          ...currentConfig.theme,
+          backgroundImage: '',
+          backgroundVideo: ''
+        };
+        
+        const res = await fetch('/api/save-theme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme })
+        });
+        
+        const result = await res.json();
+        if (result.code === 200) {
+          showMessage('success', '背景已成功清除');
+          // 重新加载配置，确保所有界面保持一致
+          await loadConfig();
+        } else {
+          showMessage('error', '清除背景失败');
+        }
+      } catch (err) {
+        console.error('清除背景失败:', err);
+        showMessage('error', '清除背景失败，请重试');
+      }
+    }
+    
+    // ===== 登录状态管理 =====
+    function checkLoginStatus() {
+      if (isLoggedIn) {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('adminContainer').style.display = 'block';
+        loadConfig();
+      } else {
+        document.getElementById('loginContainer').style.display = 'flex';
+        document.getElementById('adminContainer').style.display = 'none';
+      }
+    }
+    
+    async function login() {
+      const password = document.getElementById('password').value.trim();
+      const errorEl = document.getElementById('loginError');
+      
+      if (!password) {
+        showMessage('error', '请输入管理密码');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          isLoggedIn = true;
+          localStorage.setItem('nav_admin_logged_in', 'true');
+          checkLoginStatus();
+          showMessage('success', '登录成功');
+        } else {
+          errorEl.textContent = msg;
+          errorEl.style.display = 'block';
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        errorEl.textContent = '登录失败，请检查网络连接';
+        errorEl.style.display = 'block';
+        showMessage('error', '登录失败，请检查网络连接');
+      }
+    }
+    
+    function logout() {
+      if (confirm('确定要退出管理后台吗？')) {
+        isLoggedIn = false;
+        localStorage.removeItem('nav_admin_logged_in');
+        checkLoginStatus();
+        document.getElementById('password').value = '';
+        showMessage('success', '已退出登录');
+      }
+    }
+    
+    // ===== 备份管理相关函数 =====
+    // 加载备份配置
+    async function loadBackupConfig() {
+      try {
+        const res = await fetch('/api/backup/config');
+        const { code, data } = await res.json();
+        
+        if (code === 200) {
+          document.getElementById('maxBackups').value = data.maxBackups;
+          document.getElementById('backupInterval').value = data.backupInterval;
+        }
+      } catch (err) {
+        console.error('加载备份配置失败:', err);
+        showMessage('error', '加载备份配置失败');
+      }
+    }
+    
+    // 保存备份配置
+    async function saveBackupConfig() {
+      try {
+        const maxBackups = parseInt(document.getElementById('maxBackups').value);
+        const backupInterval = parseInt(document.getElementById('backupInterval').value);
+        
+        if (isNaN(maxBackups) || isNaN(backupInterval)) {
+          showMessage('error', '请输入有效的配置值');
+          return;
+        }
+        
+        const res = await fetch('/api/backup/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ maxBackups, backupInterval })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        console.error('保存备份配置失败:', err);
+        showMessage('error', '保存备份配置失败');
+      }
+    }
+    
+    // 导出备份
+    function exportBackup() {
+      window.open('/api/backup/export', '_blank');
+    }
+    
+    // 导入备份
+    async function importBackup(files) {
+      if (!files || files.length === 0) return;
+      
+      const file = files[0];
+      const formData = new FormData();
+      formData.append('backup', file);
+      
+      try {
+        const res = await fetch('/api/backup/import', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+          // 重新加载配置
+          await loadConfig();
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        console.error('导入备份失败:', err);
+        showMessage('error', '导入备份失败');
+      }
+    }
+    
+    // 立即创建备份
+    async function performManualBackup() {
+      try {
+        const res = await fetch('/api/backup/export');
+        if (res.ok) {
+          showMessage('success', '手动备份创建成功');
+          // 重新加载备份列表
+          await loadBackupList();
+        } else {
+          showMessage('error', '手动备份创建失败');
+        }
+      } catch (err) {
+        console.error('手动备份失败:', err);
+        showMessage('error', '手动备份失败');
+      }
+    }
+    
+    // 加载备份列表
+    async function loadBackupList() {
+      try {
+        const res = await fetch('/api/backup/list');
+        const { code, data } = await res.json();
+        
+        if (code === 200) {
+          const backupListEl = document.getElementById('backupList');
+          
+          if (data.length === 0) {
+            backupListEl.innerHTML = `
+              <div style="text-align: center; color: #666; padding: 40px;">
+                <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                <p>暂无备份文件</p>
+              </div>
+            `;
+            return;
+          }
+          
+          let html = `
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #f8f9fa; border-bottom: 2px solid #e9ecef;">
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e9ecef;">文件名</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e9ecef;">创建时间</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e9ecef;">大小</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #e9ecef;">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+          
+          data.forEach(backup => {
+            const size = (backup.size / 1024).toFixed(2);
+            const date = new Date(backup.created).toLocaleString();
+            
+            html += `
+              <tr style="border-bottom: 1px solid #e9ecef; transition: background 0.3s ease;">
+                <td style="padding: 12px;">${backup.name}</td>
+                <td style="padding: 12px;">${date}</td>
+                <td style="padding: 12px;">${size} KB</td>
+                <td style="padding: 12px; text-align: center;">
+                  <button class="btn btn-sm btn-primary" onclick="downloadBackup('${backup.name}')">
+                    <i class="fas fa-download"></i> 下载
+                  </button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteBackup('${backup.name}')">
+                    <i class="fas fa-trash"></i> 删除
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+          
+          html += `
+                </tbody>
+              </table>
+            </div>
+          `;
+          
+          backupListEl.innerHTML = html;
+          // 添加星星效果
+          addStarsToButtons();
+        }
+      } catch (err) {
+        console.error('加载备份列表失败:', err);
+        showMessage('error', '加载备份列表失败');
+      }
+    }
+    
+    // 下载备份
+    function downloadBackup(fileName) {
+      window.open(`/backups/${fileName}`, '_blank');
+    }
+    
+    // 删除备份
+    async function deleteBackup(fileName) {
+      showConfirmDialog(
+        '确认删除备份',
+        `确定要删除备份文件 "${fileName}" 吗？此操作不可恢复。`,
+        `performDeleteBackup('${fileName}')`
+      );
+    }
+    
+    // 执行删除备份
+    async function performDeleteBackup(fileName) {
+      try {
+        const res = await fetch('/api/backup/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileName })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+          // 重新加载备份列表
+          await loadBackupList();
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        console.error('删除备份失败:', err);
+        showMessage('error', '删除备份失败');
+      }
+    }
+
+    // ===== 配置加载 =====
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const { code, data } = await res.json();
+        
+        if (code === 200) {
+          currentConfig = data;
+          serviceList = [...(data.services || [])];
+          currentConfig.customFonts = data.theme?.customFonts || [];
+          
+          // 加载字体列表
+          await loadFonts();
+          
+          // 加载图标列表
+          await loadIconsList();
+          
+          // 更新UI
+          await updateThemeUI(data.theme);
+          updateServiceUI();
+          updateIconsUI();
+          updateStats();
+          updateFontList();
+        }
+      } catch (err) {
+        console.error('配置加载失败:', err);
+        showMessage('error', '配置加载失败');
+      }
+    }
+    
+    // 加载字体
+    async function loadFonts() {
+      try {
+        const res = await fetch('/api/fonts');
+        const { code, data } = await res.json();
+        if (code === 200) {
+          currentConfig.customFonts = data;
+        }
+      } catch (err) {
+        console.error('加载字体失败:', err);
+      }
+    }
+    
+
+    
+    // ===== 主题管理 - 修复字体设置 =====
+    async function updateThemeUI(theme) {
+      if (!theme) return;
+      
+      // 颜色设置
+      document.getElementById('primaryColor').value = theme.primaryColor || '#2d7ff9';
+      document.getElementById('primaryColorText').value = theme.primaryColor || '#2d7ff9';
+      document.getElementById('primaryHoverColor').value = theme.primaryHoverColor || '#1f6ee8';
+      document.getElementById('primaryHoverColorText').value = theme.primaryHoverColor || '#1f6ee8';
+      document.getElementById('backgroundColor').value = theme.backgroundColor || '#f5f7fa';
+      document.getElementById('backgroundColorText').value = theme.backgroundColor || '#f5f7fa';
+      
+      // 字体大小
+      const fontSize = theme.fontSize || '16px';
+      document.getElementById('fontSize').value = fontSize;
+      
+      // 字体粗细
+      const fontWeight = theme.fontWeight || '600';
+      document.getElementById('fontWeight').value = fontWeight;
+      
+      // 毛玻璃效果设置
+      const glassOpacity = theme.glassOpacity || '80';
+      document.getElementById('glassOpacity').value = glassOpacity;
+      document.getElementById('glassOpacityValue').textContent = glassOpacity + '%';
+      
+      const glassBlur = theme.glassBlur || '10';
+      document.getElementById('glassBlur').value = glassBlur;
+      document.getElementById('glassBlurValue').textContent = glassBlur + 'px';
+      
+      document.getElementById('glassColor1').value = theme.glassColor1 || '#ffffff';
+      document.getElementById('glassColor1Text').value = theme.glassColor1 || '#ffffff';
+      document.getElementById('glassColor2').value = theme.glassColor2 || '#ffffff';
+      document.getElementById('glassColor2Text').value = theme.glassColor2 || '#ffffff';
+      
+      // 阴影设置
+      document.getElementById('cardShadow').value = theme.cardShadow || '0 4px 12px rgba(0, 0, 0, 0.08)';
+      document.getElementById('cardHoverShadow').value = theme.cardHoverShadow || '0 8px 20px rgba(0, 0, 0, 0.12)';
+      
+      // 更新CSS变量
+      await updateCSSVariables(theme);
+      
+      // 更新毛玻璃渐变
+      updateGlassGradient();
+    }
+    
+    // 加载的字体集合
+    let loadedFonts = new Set();
+    
+    // 十六进制颜色转RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+    }
+    
+    // 加载自定义字体
+    async function loadCustomFonts(theme) {
+      if (!theme || !theme.customFonts || !Array.isArray(theme.customFonts)) return;
+      
+      const fontPromises = [];
+      
+      theme.customFonts.forEach(font => {
+        if (font.url && font.family && !loadedFonts.has(font.name)) {
+          // 创建font-face
+          const fontFace = new FontFace(font.family, `url(${font.url})`);
+          loadedFonts.add(font.name);
+          fontPromises.push(
+            fontFace.load().then(() => {
+              document.fonts.add(fontFace);
+            }).catch(err => {
+              console.error('字体加载失败：', err);
+              loadedFonts.delete(font.name);
+            })
+          );
+        }
+      });
+      
+      // 等待所有字体加载完成
+      await Promise.all(fontPromises);
+    }
+    
+    // 更新CSS变量
+    async function updateCSSVariables(theme) {
+      const root = document.documentElement;
+      
+      if (theme.primaryColor) root.style.setProperty('--primary-color', theme.primaryColor);
+      if (theme.primaryHoverColor) root.style.setProperty('--primary-hover', theme.primaryHoverColor);
+      if (theme.fontSize) root.style.setProperty('--font-size', theme.fontSize);
+      if (theme.textColor) root.style.setProperty('--text-color', theme.textColor);
+      if (theme.secondaryTextColor) root.style.setProperty('--secondary-text-color', theme.secondaryTextColor);
+      if (theme.footerTextColor) root.style.setProperty('--footer-text-color', theme.footerTextColor);
+      
+      // 毛玻璃效果设置
+      if (theme.glassOpacity) {
+        const opacity = parseInt(theme.glassOpacity) / 100;
+        root.style.setProperty('--glass-opacity', opacity);
+      }
+      if (theme.glassBlur) {
+        root.style.setProperty('--glass-blur', theme.glassBlur + 'px');
+      }
+      if (theme.glassColor1 && theme.glassColor2 && theme.glassOpacity) {
+        const opacity = parseInt(theme.glassOpacity) / 100;
+        const gradient = `linear-gradient(135deg, rgba(${hexToRgb(theme.glassColor1)}, ${opacity}), rgba(${hexToRgb(theme.glassColor2)}, ${opacity * 0.5}))`;
+        root.style.setProperty('--glass-gradient', gradient);
+      }
+      
+      // 处理字体设置
+      if (theme.fontFamily) {
+        // 加载自定义字体
+        await loadCustomFonts(theme);
+        
+        // 检查是否是自定义字体
+        const isCustomFont = theme.customFonts?.some(font => 
+          font.family === theme.fontFamily
+        );
+        
+        if (isCustomFont) {
+          // 提取字体名称
+          const fontName = theme.fontFamily.split("'")[1] || theme.fontFamily.split(',')[0];
+          if (loadedFonts.has(fontName)) {
+            // 应用自定义字体
+            root.style.setProperty('--font-family', theme.fontFamily);
+          }
+        } else {
+          // 应用系统字体
+          root.style.setProperty('--font-family', theme.fontFamily);
+        }
+        
+        // 直接更新DOM元素的字体，确保字体变化立即生效
+        document.querySelectorAll('body, h1, h2, h3, h4, h5, h6, p, a, button, input, select, textarea').forEach(el => {
+          el.style.fontFamily = theme.fontFamily;
+        });
+      }
+    }
+    
+    // 初始化阴影预览
+    function initShadowPreview() {
+      // 延迟执行，确保DOM元素已加载
+      setTimeout(() => {
+        updateShadowPreview();
+      }, 100);
+    }
+    
+    // 字体列表更新
+    function updateFontList() {
+      const fontList = document.getElementById('fontList');
+      const currentFont = currentConfig.theme.fontFamily || 'Microsoft YaHei, PingFang SC, sans-serif';
+      
+      // 预定义字体选项
+      const fontOptions = [
+        { name: '微软雅黑', family: 'Microsoft YaHei, PingFang SC, sans-serif' },
+        { name: '苹方', family: 'PingFang SC, sans-serif' },
+        { name: '思源黑体', family: '"Source Han Sans SC", sans-serif' },
+        { name: 'Arial', family: 'Arial, Helvetica, sans-serif' },
+        { name: 'Georgia', family: 'Georgia, serif' },
+        { name: 'Courier New', family: '"Courier New", Courier, monospace' },
+        { name: 'Verdana', family: 'Verdana, Geneva, sans-serif' }
+      ];
+      
+      // 生成字体选项HTML
+      let html = '';
+      
+      // 添加预定义字体
+      fontOptions.forEach(font => {
+        const isSelected = font.family === currentFont;
+        html += `
+          <div class="font-option ${isSelected ? 'selected' : ''}" onclick="selectFont('${font.family.replace(/'/g, "\\'")}', this)">
+            <div class="font-preview-text" style="font-family: ${font.family};">
+              这是一段 ${font.name} 字体预览
+            </div>
+            <div class="font-info">
+              <span>${font.name}</span>
+              ${isSelected ? '<i class="fas fa-check" style="color: var(--primary-color);"></i>' : ''}
+            </div>
+          </div>
+        `;
+      });
+      
+      // 添加自定义字体（带删除按钮）
+      if (currentConfig.customFonts && currentConfig.customFonts.length > 0) {
+        currentConfig.customFonts.forEach(font => {
+          const isSelected = font.family === currentFont;
+          html += `
+            <div class="font-option ${isSelected ? 'selected' : ''}" onclick="selectFont('${font.family.replace(/'/g, "\\'")}', this)">
+              <div class="font-preview-text" style="font-family: ${font.family};">
+                这是一段 ${font.name} 字体预览
+              </div>
+              <div class="font-info">
+                <span>${font.name}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  ${isSelected ? '<i class="fas fa-check" style="color: var(--primary-color);"></i>' : ''}
+                  <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteFont('${font.id}')" title="删除字体">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+      
+      fontList.innerHTML = html;
+    }
+    
+    // 选择字体
+    function selectFont(fontFamily, element) {
+      const fontOptions = document.querySelectorAll('.font-option');
+      fontOptions.forEach(option => {
+        option.classList.remove('selected');
+      });
+      
+      element.classList.add('selected');
+      currentConfig.theme.fontFamily = fontFamily;
+      
+      // 立即应用字体
+      updateCSSVariables({ fontFamily });
+    }
+    
+    // 保存最近删除的字体数据，用于撤销操作
+    let recentlyDeletedFont = null;
+    
+    // 删除字体
+    async function deleteFont(fontId) {
+      // 查找字体数据，用于撤销操作
+      let fontToDelete = null;
+      if (currentConfig.customFonts) {
+        fontToDelete = currentConfig.customFonts.find(font => font.id === fontId);
+      }
+      
+      // 保存要删除的字体数据到全局变量
+      window.fontToDelete = fontToDelete;
+      
+      // 显示确认对话框
+      showConfirmDialog(
+        '确认删除字体',
+        '确定要删除这个字体吗？删除后可以在30秒内撤销此操作。',
+        `performDeleteFont('${fontId}', window.fontToDelete)`
+      );
+    }
+    
+    // 执行删除字体操作
+    async function performDeleteFont(fontId, fontData) {
+      try {
+        // 保存字体数据，用于撤销操作
+        recentlyDeletedFont = fontData;
+        
+        // 调用API删除字体
+        const res = await fetch('/api/delete-font', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fontId })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          // 显示带撤销按钮的成功消息
+          showMessage('success', msg, 30000, [
+            {
+              text: '撤销',
+              className: 'btn-undo',
+              onclick: 'undoDeleteFont()'
+            },
+            {
+              text: '关闭',
+              className: 'btn-dismiss',
+              onclick: 'this.closest(\'.message\').remove()'
+            }
+          ]);
+          
+          // 重新加载字体列表
+          await loadFonts();
+          
+          // 更新字体列表UI
+          updateFontList();
+          
+          // 如果删除的是当前选中的字体，切换到默认字体
+          const currentFont = currentConfig.theme.fontFamily;
+          const isCurrentFontDeleted = !currentConfig.customFonts.some(font => font.family === currentFont);
+          
+          if (isCurrentFontDeleted) {
+            const defaultFont = 'Microsoft YaHei, PingFang SC, sans-serif';
+            currentConfig.theme.fontFamily = defaultFont;
+            updateCSSVariables({ fontFamily: defaultFont });
+            updateFontList();
+            showMessage('info', '已切换到默认字体');
+          }
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        console.error('删除字体失败:', err);
+        showMessage('error', '删除字体失败，请重试');
+      }
+    }
+    
+    // 撤销删除的字体
+    async function undoDeleteFont() {
+      if (!recentlyDeletedFont) {
+        showMessage('error', '没有可撤销的删除操作');
+        return;
+      }
+      
+      try {
+        // 读取当前配置
+        const res = await fetch('/api/config');
+        const { code, data } = await res.json();
+        
+        if (code === 200) {
+          const config = data;
+          if (!config.theme) config.theme = {};
+          if (!config.theme.customFonts) config.theme.customFonts = [];
+          
+          // 检查字体是否已经存在
+          const existingFont = config.theme.customFonts.find(font => font.id === recentlyDeletedFont.id);
+          if (!existingFont) {
+            // 添加回字体
+            config.theme.customFonts.push(recentlyDeletedFont);
+            
+            // 保存配置
+            const saveRes = await fetch('/api/save-theme', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ theme: config.theme })
+            });
+            
+            const saveResult = await saveRes.json();
+            if (saveResult.code === 200) {
+              // 重新加载字体列表
+              await loadFonts();
+              updateFontList();
+              showMessage('success', '字体已成功恢复');
+              // 清除最近删除的字体数据
+              recentlyDeletedFont = null;
+            } else {
+              showMessage('error', '恢复字体失败');
+            }
+          } else {
+            showMessage('info', '字体已经存在，无需恢复');
+            recentlyDeletedFont = null;
+          }
+        }
+      } catch (err) {
+        console.error('恢复字体失败:', err);
+        showMessage('error', '恢复字体失败，请重试');
+      }
+    }
+    
+    // 更新阴影效果预览
+    function updateShadowPreview() {
+      const previewCard = document.getElementById('previewCard');
+      if (!previewCard) return;
+      
+      const cardShadow = document.getElementById('cardShadow').value;
+      const cardHoverShadow = document.getElementById('cardHoverShadow').value;
+      
+      // 应用阴影效果
+      previewCard.style.boxShadow = cardShadow;
+      
+      // 添加鼠标悬停效果
+      previewCard.onmouseenter = function() {
+        this.style.boxShadow = cardHoverShadow;
+        this.style.transform = 'translateY(-2px)';
+      };
+      
+      previewCard.onmouseleave = function() {
+        this.style.boxShadow = cardShadow;
+        this.style.transform = 'translateY(0)';
+      };
+    }
+    
+    // 更新阴影强度
+    function updateShadowIntensity(value) {
+      document.getElementById('shadowIntensityValue').textContent = value + '%';
+      // 更新阴影样式
+      const shadowValue = parseFloat(value) / 100;
+      const shadowStyle = `0 4px 12px rgba(0, 0, 0, ${shadowValue.toFixed(2)})`;
+      document.getElementById('cardShadow').value = shadowStyle;
+      // 立即应用阴影效果
+      if (currentConfig.theme) {
+        currentConfig.theme.cardShadow = shadowStyle;
+      }
+      // 更新预览
+      updateShadowPreview();
+    }
+    
+    // 更新悬浮阴影强度
+    function updateHoverShadowIntensity(value) {
+      document.getElementById('hoverShadowIntensityValue').textContent = value + '%';
+      // 更新悬浮阴影样式
+      const shadowValue = parseFloat(value) / 100;
+      const shadowStyle = `0 8px 20px rgba(0, 0, 0, ${shadowValue.toFixed(2)})`;
+      document.getElementById('cardHoverShadow').value = shadowStyle;
+      // 立即应用悬浮阴影效果
+      if (currentConfig.theme) {
+        currentConfig.theme.cardHoverShadow = shadowStyle;
+      }
+      // 更新预览
+      updateShadowPreview();
+    }
+    
+    // 更新毛玻璃不透明度
+    function updateGlassOpacity(value) {
+      document.getElementById('glassOpacityValue').textContent = value + '%';
+      const opacity = value / 100;
+      document.documentElement.style.setProperty('--glass-opacity', opacity);
+      if (currentConfig.theme) {
+        currentConfig.theme.glassOpacity = value;
+      }
+      updateGlassGradient();
+    }
+    
+    // 更新毛玻璃模糊程度
+    function updateGlassBlur(value) {
+      document.getElementById('glassBlurValue').textContent = value + 'px';
+      document.documentElement.style.setProperty('--glass-blur', value + 'px');
+      document.getElementById('previewGlassCard').style.backdropFilter = `blur(${value}px)`;
+      document.getElementById('previewGlassCard').style.webkitBackdropFilter = `blur(${value}px)`;
+      if (currentConfig.theme) {
+        currentConfig.theme.glassBlur = value;
+      }
+    }
+    
+    // 更新毛玻璃渐变色
+    function updateGlassGradient() {
+      const color1 = document.getElementById('glassColor1').value;
+      const color2 = document.getElementById('glassColor2').value;
+      const opacity = document.getElementById('glassOpacity').value / 100;
+      const gradient = `linear-gradient(135deg, rgba(${hexToRgb(color1)}, ${opacity}), rgba(${hexToRgb(color2)}, ${opacity * 0.5}))`;
+      document.documentElement.style.setProperty('--glass-gradient', gradient);
+      document.getElementById('previewGlassCard').style.background = gradient;
+      if (currentConfig.theme) {
+        currentConfig.theme.glassColor1 = color1;
+        currentConfig.theme.glassColor2 = color2;
+      }
+    }
+    
+    // 十六进制颜色转RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+    }
+    
+    // 更新背景不透明度
+    function updateBackgroundOpacity(value) {
+      document.getElementById('backgroundOpacityValue').textContent = value + '%';
+      if (currentConfig.theme) {
+        currentConfig.theme.backgroundOpacity = value;
+      }
+    }
+    
+    // 更新背景优先级
+    function updateBackgroundPriority(value) {
+      if (currentConfig.theme) {
+        currentConfig.theme.backgroundPriority = value;
+      }
+    }
+    
+    // 上传背景图片
+    function uploadBackgroundImage(files) {
+      if (!files || files.length === 0) return;
+      
+      const file = files[0];
+      const progress = document.getElementById('backgroundImageProgress');
+      const status = document.getElementById('backgroundImageStatus');
+      const preview = document.getElementById('backgroundImagePreview');
+      
+      progress.style.display = 'block';
+      status.style.display = 'block';
+      status.textContent = '上传中...';
+      status.className = 'upload-status';
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'background-image');
+      
+      fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      }).then(response => response.json())
+        .then(data => {
+          if (data.code === 200) {
+            status.textContent = '上传成功';
+            status.className = 'upload-status success';
+            preview.innerHTML = `<img src="${data.data.url}" alt="背景图片预览" style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius);">`;
+            if (currentConfig.theme) {
+              currentConfig.theme.backgroundImage = data.data.url;
+            }
+          } else {
+            status.textContent = '上传失败: ' + data.msg;
+            status.className = 'upload-status error';
+          }
+          progress.style.display = 'none';
+        })
+        .catch(err => {
+          status.textContent = '上传失败: 网络错误';
+          status.className = 'upload-status error';
+          progress.style.display = 'none';
+        });
+    }
+    
+    // 上传背景视频
+    function uploadBackgroundVideo(files) {
+      if (!files || files.length === 0) return;
+      
+      const file = files[0];
+      const progress = document.getElementById('backgroundVideoProgress');
+      const status = document.getElementById('backgroundVideoStatus');
+      const preview = document.getElementById('backgroundVideoPreview');
+      
+      // 验证文件类型
+      if (!file.type.startsWith('video/')) {
+        status.style.display = 'block';
+        status.textContent = '上传失败: 请选择视频文件';
+        status.className = 'upload-status error';
+        return;
+      }
+      
+      // 验证文件大小
+      if (file.size > 200 * 1024 * 1024) {
+        status.style.display = 'block';
+        status.textContent = '上传失败: 文件大小不能超过200MB';
+        status.className = 'upload-status error';
+        return;
+      }
+      
+      progress.style.display = 'block';
+      status.style.display = 'block';
+      status.textContent = '上传中...';
+      status.className = 'upload-status';
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'background-video');
+      
+      fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('网络响应错误: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.code === 200) {
+          status.textContent = '上传成功';
+          status.className = 'upload-status success';
+          preview.innerHTML = `<video controls style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius);"><source src="${data.data.url}" type="video/mp4"></video>`;
+          if (currentConfig.theme) {
+            currentConfig.theme.backgroundVideo = data.data.url;
+          }
+        } else {
+          status.textContent = '上传失败: ' + (data.msg || '未知错误');
+          status.className = 'upload-status error';
+        }
+        progress.style.display = 'none';
+      })
+      .catch(err => {
+        status.textContent = '上传失败: ' + err.message;
+        status.className = 'upload-status error';
+        progress.style.display = 'none';
+        console.error('视频上传错误:', err);
+      });
+    }
+    
+    // 初始化字体上传
+    function initFontUpload() {
+      const fontUploadArea = document.getElementById('fontUploadArea');
+      const fontFileInput = document.getElementById('fontFileInput');
+      
+      if (!fontUploadArea || !fontFileInput) return;
+      
+      fontUploadArea.addEventListener('click', () => {
+        fontFileInput.click();
+      });
+      
+      fontFileInput.addEventListener('change', handleFontUpload);
+      
+      // 拖拽上传
+      fontUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fontUploadArea.style.borderColor = 'var(--primary-color)';
+        fontUploadArea.style.background = '#f0f5ff';
+      });
+      
+      fontUploadArea.addEventListener('dragleave', () => {
+        fontUploadArea.style.borderColor = '#ced4da';
+        fontUploadArea.style.background = '#f8f9fa';
+      });
+      
+      fontUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fontUploadArea.style.borderColor = '#ced4da';
+        fontUploadArea.style.background = '#f8f9fa';
+        
+        if (e.dataTransfer.files.length > 0) {
+          fontFileInput.files = e.dataTransfer.files;
+          handleFontUpload();
+        }
+      });
+    }
+    
+    // ===== 图标库相关函数 =====
+    let currentServiceIndex = -1;
+    let selectedIconClass = 'fas fa-cloud';
+    
+    function openIconLibrary(index) {
+      currentServiceIndex = index;
+      const service = serviceList[index];
+      selectedIconClass = service.icon || 'fas fa-cloud';
+      
+      // 更新选中图标预览
+      updateSelectedIconPreview(selectedIconClass);
+      
+      // 加载图标库
+      loadIconLibrary();
+      
+      // 显示图标库面板
+      document.getElementById('iconLibraryPanel').style.display = 'flex';
+    }
+    
+    function closeIconLibrary() {
+      document.getElementById('iconLibraryPanel').style.display = 'none';
+      currentServiceIndex = -1;
+    }
+    
+    function loadIconLibrary() {
+      const grid = document.getElementById('iconLibraryGrid');
+      grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><i class="fas fa-spinner fa-spin fa-3x"></i><p style="margin-top: 15px;">加载图标库中...</p></div>';
+      
+      // 模拟加载延迟
+      setTimeout(() => {
+        // 使用默认图标列表
+        generateIconLibraryGrid(defaultIcons);
+      }, 500);
+    }
+    
+    function generateIconLibraryGrid(icons) {
+      const grid = document.getElementById('iconLibraryGrid');
+      grid.innerHTML = '';
+      
+      icons.forEach(iconClass => {
+        const iconName = iconClass.split(' ')[1]?.replace('fa-', '') || 'icon';
+        const iconItem = document.createElement('div');
+        iconItem.className = 'icon-item';
+        iconItem.onclick = () => selectIconFromLibrary(iconClass);
+        iconItem.innerHTML = `
+          <i class="${iconClass}" style="font-size: 2rem; color: var(--primary-color);"></i>
+          <div class="icon-name" style="font-size: 0.7rem; text-align: center; margin-top: 5px;">${iconName}</div>
+        `;
+        grid.appendChild(iconItem);
+      });
+    }
+    
+    function selectIconFromLibrary(iconClass) {
+      selectedIconClass = iconClass;
+      updateSelectedIconPreview(iconClass);
+      
+      // 高亮选中的图标
+      const iconItems = document.querySelectorAll('#iconLibraryGrid .icon-item');
+      iconItems.forEach(item => {
+        item.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+    }
+    
+    function updateSelectedIconPreview(iconClass) {
+      const preview = document.getElementById('selectedIconPreview');
+      const iconClassEl = document.getElementById('selectedIconClass');
+      
+      preview.innerHTML = `
+        <i class="${iconClass}" style="font-size: 2rem; color: var(--primary-color);"></i>
+        <span id="selectedIconClass" style="font-family: monospace;">${iconClass}</span>
+      `;
+    }
+    
+    function confirmIconSelection() {
+      if (currentServiceIndex !== -1) {
+        // 更新服务的图标
+        serviceList[currentServiceIndex].icon = selectedIconClass;
+        // 更新UI
+        updateServiceUI();
+        // 关闭图标库
+        closeIconLibrary();
+        // 显示成功消息
+        showMessage('success', '图标选择成功');
+      }
+    }
+    
+    function searchIcons() {
+      const searchTerm = document.getElementById('iconSearchInput').value.toLowerCase();
+      const iconItems = document.querySelectorAll('#iconLibraryGrid .icon-item');
+      
+      iconItems.forEach(item => {
+        const iconName = item.querySelector('.icon-name').textContent.toLowerCase();
+        if (iconName.includes(searchTerm)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+    
+    function filterIcons() {
+      // 获取选中的风格
+      const selectedStyle = document.querySelector('input[name="iconStyle"]:checked').value;
+      
+      // 获取选中的分类
+      const selectedCategories = Array.from(document.querySelectorAll('input[name="iconCategory"]:checked')).map(cb => cb.value);
+      
+      const iconItems = document.querySelectorAll('#iconLibraryGrid .icon-item');
+      
+      iconItems.forEach(item => {
+        const iconClass = item.querySelector('i').className;
+        const iconStyle = iconClass.split(' ')[0];
+        
+        // 风格筛选
+        const styleMatch = selectedStyle === 'all' || iconStyle === selectedStyle;
+        
+        // 分类筛选（简化处理，实际项目中可能需要更复杂的分类逻辑）
+        const categoryMatch = selectedCategories.includes('all') || true;
+        
+        if (styleMatch && categoryMatch) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+    
+    async function handleFontUpload() {
+      const fileInput = document.getElementById('fontFileInput');
+      const file = fileInput.files[0];
+      
+      if (!file) return;
+      
+      // 验证文件大小
+      if (file.size > 30 * 1024 * 1024) {
+        showMessage('error', '字体文件不能超过30MB');
+        return;
+      }
+      
+      // 上传文件
+      const formData = new FormData();
+      formData.append('font', file);
+      
+      try {
+        const res = await fetch('/api/upload-font', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const { code, msg, data } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+          
+          // 重新加载字体列表
+          await loadFonts();
+          
+          // 更新字体列表UI
+          updateFontList();
+          
+          // 选择新上传的字体
+          if (data && data.fontFamily) {
+            currentConfig.theme.fontFamily = data.fontFamily;
+            // 重新加载配置，确保包含新的字体信息
+            await loadConfig();
+          }
+          
+          // 清空文件输入
+          fileInput.value = '';
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        showMessage('error', '字体上传失败');
+      }
+    }
+    
+    // ===== 图标管理 =====
+    // 加载图标列表
+    async function loadIconsList() {
+      try {
+        // 从本地图标库加载图标列表
+        const localIcons = await loadLocalIconsFromDirectory();
+        defaultIcons = localIcons;
+        generateIconsGrid();
+      } catch (err) {
+        console.error('加载图标列表失败:', err);
+      }
+    }
+    
+    function generateIconsGrid() {
+      const container = document.getElementById('iconsGrid');
+      if (!container) return;
+      
+      let html = '';
+      defaultIcons.forEach((iconClass, index) => {
+        const iconName = iconClass.split(' ')[1]?.replace('fa-', '') || `icon${index}`;
+        html += `
+          <div class="icon-item" onclick="selectPresetIcon('${iconClass}')">
+            <i class="${iconClass}"></i>
+            <div class="icon-name">${iconName}</div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+    
+    function selectPresetIcon(iconClass) {
+      // 更新输入框
+      document.getElementById('faIconInput').value = iconClass;
+      
+      // 更新预览
+      const preview = document.getElementById('faIconPreview');
+      preview.innerHTML = `<i class="${iconClass}" style="font-size: 4rem; color: var(--primary-color);"></i>`;
+      
+      // 高亮选中的图标
+      const iconItems = document.querySelectorAll('.icon-item');
+      iconItems.forEach(item => {
+        item.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+      
+      showMessage('success', '图标已选择');
+    }
+    
+    function previewFaIcon() {
+      const iconClass = document.getElementById('faIconInput').value.trim();
+      const preview = document.getElementById('faIconPreview');
+      
+      if (!iconClass) {
+        showMessage('error', '请输入图标类名');
+        return;
+      }
+      
+      preview.innerHTML = `<i class="${iconClass}" style="font-size: 4rem; color: var(--primary-color);"></i>`;
+      showMessage('success', '图标预览已更新');
+    }
+    
+    // 自动下载Font Awesome图标库
+    async function loadLocalFontAwesomeIcons() {
+      if (!confirm('确定要加载本地Font Awesome图标库吗？这将从本地目录加载图标资源。')) {
+        return;
+      }
+      
+      // 创建加载状态对话框
+      const statusDialog = document.createElement('div');
+      statusDialog.className = 'confirm-dialog';
+      statusDialog.id = 'loadStatusDialog';
+      statusDialog.innerHTML = `
+        <div class="confirm-dialog-content" style="max-width: 600px; width: 90%;">
+          <div class="confirm-dialog-header">
+            <h3>图标库加载状态</h3>
+          </div>
+          <div class="confirm-dialog-body">
+            <div id="loadStatusContent">
+              <p>正在从本地目录加载Font Awesome图标库...</p>
+              <div style="margin-top: 20px; height: 200px; overflow-y: auto; border: 1px solid #e1e5eb; border-radius: var(--border-radius); padding: 10px;">
+                <div id="loadLog"></div>
+              </div>
+            </div>
+          </div>
+          <div class="confirm-dialog-actions">
+            <button class="btn-cancel" onclick="document.getElementById('loadStatusDialog').remove()">
+              关闭
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(statusDialog);
+      
+      const loadLog = document.getElementById('loadLog');
+      
+      function addLog(message, type = 'info') {
+        const logEntry = document.createElement('div');
+        logEntry.style.marginBottom = '8px';
+        logEntry.style.fontSize = '0.9rem';
+        
+        if (type === 'error') {
+          logEntry.style.color = '#dc2626';
+        } else if (type === 'success') {
+          logEntry.style.color = '#10b981';
+        }
+        
+        logEntry.textContent = message;
+        loadLog.appendChild(logEntry);
+        loadLog.scrollTop = loadLog.scrollHeight;
+      }
+      
+      addLog('开始加载本地Font Awesome图标库...');
+      
+      try {
+        addLog('正在深入扫描本地Font Awesome v7目录...');
+        addLog('路径: /fonts/fontawesome-free-7.1.0-web/metadata/icons.json');
+        addLog('文件大小: 约4.4MB');
+        addLog('正在解析图标数据结构...');
+        addLog('正在提取所有可用图标...');
+        addLog('此过程可能需要几秒钟，请耐心等待...');
+        
+        // 从本地图标库加载图标列表
+        const localIcons = await loadLocalIconsFromDirectory();
+        
+        addLog(`深入扫描完成，共发现 ${localIcons.length} 个图标`, 'info');
+        
+        // 更新默认图标列表
+        defaultIcons = localIcons;
+        
+        addLog('正在刷新图标网格...', 'info');
+        // 刷新图标网格
+        updateIconsUI();
+        
+        addLog('正在更新统计信息...', 'info');
+        // 更新统计信息
+        updateStats();
+        
+        addLog(`成功加载: ${localIcons.length} 个图标`, 'success');
+        addLog('图标网格已刷新', 'success');
+        addLog('本地图标库深入扫描完成', 'success');
+        
+        showMessage('success', `本地图标库深入扫描成功，共发现并加载 ${localIcons.length} 个图标`);
+      } catch (err) {
+        console.error('加载本地Font Awesome图标库失败:', err);
+        addLog(`加载失败: ${err.message}`, 'error');
+        addLog('将使用默认图标列表', 'info');
+        showMessage('error', '加载本地图标库失败，已使用默认图标列表');
+      }
+    }
+    
+    // 从本地目录加载图标列表
+    async function loadLocalIconsFromDirectory() {
+      try {
+        console.log('开始深入扫描本地Font Awesome v7图标库...');
+        
+        // 从本地icons.json文件加载所有图标信息
+        const response = await fetch('/fonts/fontawesome-free-7.1.0-web/metadata/icons.json');
+        if (!response.ok) {
+          throw new Error('无法加载本地图标信息文件');
+        }
+        
+        console.log('成功加载icons.json文件，开始解析数据...');
+        const iconsData = await response.json();
+        const localIcons = [];
+        let processedIcons = 0;
+        let loadedIcons = 0;
+        let solidIcons = 0;
+        let regularIcons = 0;
+        let brandsIcons = 0;
+        
+        console.log('开始遍历所有图标数据...');
+        
+        // 解析图标数据，提取所有图标的类名
+        // Font Awesome v7的图标数据结构
+        for (const iconName in iconsData) {
+          if (iconsData.hasOwnProperty(iconName)) {
+            processedIcons++;
+            const icon = iconsData[iconName];
+            
+            // 直接根据styles属性加载所有图标
+            if (icon.styles && Array.isArray(icon.styles)) {
+              // 根据可用的风格生成对应的类名
+              if (icon.styles.includes('solid')) {
+                localIcons.push(`fas fa-${iconName}`);
+                loadedIcons++;
+                solidIcons++;
+              }
+              if (icon.styles.includes('regular')) {
+                localIcons.push(`far fa-${iconName}`);
+                loadedIcons++;
+                regularIcons++;
+              }
+              if (icon.styles.includes('brands')) {
+                localIcons.push(`fab fa-${iconName}`);
+                loadedIcons++;
+                brandsIcons++;
+              }
+            }
+            
+            // 每处理1000个图标，输出一次进度
+            if (processedIcons % 1000 === 0) {
+              console.log(`已处理 ${processedIcons} 个图标，加载了 ${loadedIcons} 个`);
+            }
+          }
+        }
+        
+        console.log(`深入扫描完成：`);
+        console.log(`- 总图标数：${processedIcons}`);
+        console.log(`- 已加载图标数：${loadedIcons}`);
+        console.log(`- Solid图标：${solidIcons}`);
+        console.log(`- Regular图标：${regularIcons}`);
+        console.log(`- Brands图标：${brandsIcons}`);
+        
+        return localIcons;
+      } catch (err) {
+        console.error('加载本地图标列表失败:', err);
+        // 出错时返回默认图标列表
+        return [
+          'fas fa-cloud', 'fas fa-server', 'fas fa-globe', 'fas fa-link', 'fas fa-home',
+          'fas fa-wifi', 'fas fa-database', 'fas fa-code', 'fas fa-terminal', 'fas fa-laptop'
+        ];
+      }
+    }
+    
+
+    
+    // ===== 更新统计信息 =====
+    function updateStats() {
+      // 服务数量
+      const serviceCount = serviceList.length;
+      document.getElementById('serviceStat').textContent = serviceCount;
+      document.getElementById('serviceCount').textContent = serviceCount;
+      
+      // 图标总数
+      const iconCount = defaultIcons.length;
+      document.getElementById('iconStat').textContent = iconCount;
+    }
+    
+    // ===== 恢复默认主题 =====
+    function restoreDefaultTheme() {
+      showConfirmDialog(
+        '确认恢复默认主题',
+        '确定要恢复默认主题设置吗？这将重置所有颜色、字体和背景设置到初始状态。',
+        'performRestoreDefaultTheme()'
+      );
+    }
+    
+    // 执行恢复默认主题操作
+    async function performRestoreDefaultTheme() {
+      try {
+        // 默认主题配置
+        const defaultTheme = {
+          primaryColor: '#2d7ff9',
+          primaryHoverColor: '#1f6ee8',
+          backgroundColor: '#f5f7fa',
+          fontFamily: 'Microsoft YaHei, PingFang SC, sans-serif',
+          fontSize: '16px',
+          fontWeight: '600',
+          // 毛玻璃效果默认设置
+          glassOpacity: '80',
+          glassBlur: '10',
+          glassColor1: '#ffffff',
+          glassColor2: '#ffffff',
+          // 背景设置
+          backgroundOpacity: '100',
+          backgroundPriority: 'video',
+          backgroundImage: '',
+          backgroundVideo: ''
+        };
+        
+        // 更新UI元素
+        document.getElementById('primaryColor').value = defaultTheme.primaryColor;
+        document.getElementById('primaryColorText').value = defaultTheme.primaryColor;
+        document.getElementById('primaryHoverColor').value = defaultTheme.primaryHoverColor;
+        document.getElementById('primaryHoverColorText').value = defaultTheme.primaryHoverColor;
+        document.getElementById('backgroundColor').value = defaultTheme.backgroundColor;
+        document.getElementById('backgroundColorText').value = defaultTheme.backgroundColor;
+        document.getElementById('fontSize').value = defaultTheme.fontSize;
+        document.getElementById('fontWeight').value = defaultTheme.fontWeight;
+        // 毛玻璃效果设置
+        document.getElementById('glassOpacity').value = defaultTheme.glassOpacity;
+        document.getElementById('glassOpacityValue').textContent = defaultTheme.glassOpacity + '%';
+        document.getElementById('glassBlur').value = defaultTheme.glassBlur;
+        document.getElementById('glassBlurValue').textContent = defaultTheme.glassBlur + 'px';
+        document.getElementById('glassColor1').value = defaultTheme.glassColor1;
+        document.getElementById('glassColor1Text').value = defaultTheme.glassColor1;
+        document.getElementById('glassColor2').value = defaultTheme.glassColor2;
+        document.getElementById('glassColor2Text').value = defaultTheme.glassColor2;
+        // 背景设置
+        document.getElementById('backgroundOpacity').value = defaultTheme.backgroundOpacity;
+        document.getElementById('backgroundPriority').value = defaultTheme.backgroundPriority;
+        
+        // 更新背景预览
+        document.getElementById('backgroundImagePreview').innerHTML = '';
+        document.getElementById('backgroundVideoPreview').innerHTML = '';
+        
+        // 重置文件输入框
+        document.getElementById('backgroundImageInput').value = '';
+        document.getElementById('backgroundVideoInput').value = '';
+        
+        // 更新当前配置
+        currentConfig.theme = defaultTheme;
+        
+        // 保存主题配置
+        const res = await fetch('/api/save-theme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme: defaultTheme })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', '主题已恢复为默认设置');
+          // 更新CSS变量
+          await updateCSSVariables(defaultTheme);
+          // 更新毛玻璃渐变
+          updateGlassGradient();
+          // 重新加载配置，确保所有界面保持一致
+          await loadConfig();
+        } else {
+          showMessage('error', '恢复默认主题失败');
+        }
+      } catch (err) {
+        console.error('恢复默认主题失败:', err);
+        showMessage('error', '恢复默认主题失败，请重试');
+      }
+    }
+    
+    // ===== 保存主题配置 =====
+    async function saveTheme() {
+      // 获取颜色值
+      const theme = {
+        primaryColor: document.getElementById('primaryColorText').value.trim(),
+        primaryHoverColor: document.getElementById('primaryHoverColorText').value.trim(),
+        backgroundColor: document.getElementById('backgroundColorText').value.trim(),
+        fontFamily: currentConfig.theme.fontFamily || 'Microsoft YaHei, PingFang SC, sans-serif',
+        fontSize: document.getElementById('fontSize').value,
+        fontWeight: document.getElementById('fontWeight').value,
+        // 毛玻璃效果设置
+        glassOpacity: document.getElementById('glassOpacity').value,
+        glassBlur: document.getElementById('glassBlur').value,
+        glassColor1: document.getElementById('glassColor1').value,
+        glassColor2: document.getElementById('glassColor2').value,
+        // 背景设置
+        backgroundOpacity: document.getElementById('backgroundOpacity').value,
+        backgroundPriority: document.getElementById('backgroundPriority').value,
+        backgroundImage: currentConfig.theme.backgroundImage || '',
+        backgroundVideo: currentConfig.theme.backgroundVideo || ''
+      };
+      
+      try {
+        const res = await fetch('/api/save-theme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+          currentConfig.theme = theme;
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        showMessage('error', '主题保存失败');
+      }
+    }
+    
+    // ===== 服务管理 - 修复展开收起功能 =====
+    function updateServiceUI() {
+      const container = document.getElementById('serviceListContainer');
+      
+      if (!serviceList || serviceList.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #666;">
+            <i class="fas fa-inbox fa-3x" style="margin-bottom: 15px;"></i>
+            <h3>暂无服务配置</h3>
+            <p>请点击"添加服务"按钮创建第一个服务</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '';
+      serviceList.forEach((service, index) => {
+        const isExpanded = service.expanded || false;
+        const buttonsHTML = (service.buttons || []).map((btn, btnIndex) => `
+          <div class="button-row">
+            <input type="text" class="form-control" placeholder="按钮文字" value="${btn.text || ''}" 
+                   onchange="updateServiceButton(${index}, ${btnIndex}, 'text', this.value)">
+            <input type="text" class="form-control" placeholder="按钮链接" value="${btn.url || ''}" 
+                   onchange="updateServiceButton(${index}, ${btnIndex}, 'url', this.value)">
+            <button class="btn btn-sm btn-danger" onclick="removeButton(${index}, ${btnIndex})">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        `).join('');
+        
+        html += `
+          <div class="service-item ${isExpanded ? 'expanded' : ''}" id="service-${index}">
+            <div class="service-header" onclick="toggleService(${index})">
+              <h4>
+                <i class="${service.icon || 'fas fa-globe'}"></i>
+                ${service.name || '未命名服务'}
+              </h4>
+              <div class="service-actions-buttons">
+                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); moveServiceUp(${index})">
+                  <i class="fas fa-arrow-up"></i>
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); moveServiceDown(${index})">
+                  <i class="fas fa-arrow-down"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); removeService(${index})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="service-details ${isExpanded ? 'expanded' : ''}">
+              <div class="form-group">
+                <label>服务名称</label>
+                <input type="text" class="form-control" value="${service.name || ''}" 
+                       onchange="updateServiceField(${index}, 'name', this.value)">
+              </div>
+              
+              <div class="form-group">
+                <label>服务类型</label>
+                <select class="form-control" onchange="updateServiceField(${index}, 'type', this.value); toggleLocalServiceOptions(${index}, this.value)">
+                  <option value="remote" ${service.type === 'remote' || !service.type ? 'selected' : ''}>远程服务</option>
+                  <option value="local" ${service.type === 'local' ? 'selected' : ''}>本地服务</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label>Font Awesome 图标类名</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <input type="text" class="form-control" value="${service.icon || ''}" 
+                         onchange="updateServiceField(${index}, 'icon', this.value)" 
+                         placeholder="例如: fas fa-cloud">
+                  <button class="btn btn-sm btn-primary" onclick="openIconLibrary(${index})">
+                    <i class="fas fa-icons"></i> 选择图标
+                  </button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>自定义图标URL（可选）</label>
+                <input type="text" class="form-control" value="${service.customIcon || ''}" 
+                       onchange="updateServiceField(${index}, 'customIcon', this.value)" 
+                       placeholder="自定义图标的URL地址">
+              </div>
+              
+              <div class="form-group">
+                <label>分类</label>
+                <input type="text" class="form-control" value="${service.category || '默认'}" 
+                       onchange="updateServiceField(${index}, 'category', this.value)" 
+                       placeholder="服务分类，如：网络工具、生产力等">
+              </div>
+              
+              <div class="form-group">
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>自动探测</span>
+                  <label class="switch">
+                    <input type="checkbox" ${service.autoDetect ? 'checked' : ''} onchange="updateServiceField(${index}, 'autoDetect', this.checked)">
+                    <span class="slider round"></span>
+                  </label>
+                </label>
+                <p style="margin-top: 5px; color: #666; font-size: 0.9rem;">开启后系统将定期自动探测服务可用性</p>
+              </div>
+              
+              <!-- 本地服务选项 -->
+              <div class="local-service-options" id="local-service-options-${index}" style="display: ${service.type === 'local' ? 'block' : 'none'}; margin-top: 20px; padding: 20px; border: 2px solid rgba(45, 127, 249, 0.2); border-radius: var(--border-radius); background: linear-gradient(135deg, rgba(240, 245, 255, 0.8), rgba(240, 245, 255, 0.4));">
+                <h4 style="margin-bottom: 15px; color: var(--primary-color);">本地服务配置</h4>
+                
+                <div class="form-group">
+                  <label>内容添加方式</label>
+                  <select class="form-control" onchange="updateServiceField(${index}, 'contentType', this.value); toggleLocalServiceContentOptions(${index}, this.value)">
+                    <option value="upload" ${service.contentType === 'upload' ? 'selected' : ''}>静态网页上传</option>
+                    <option value="edit" ${service.contentType === 'edit' ? 'selected' : ''}>在线编辑</option>
+                  </select>
+                </div>
+                
+                <!-- 静态网页上传选项 -->
+                <div class="local-service-upload" id="local-service-upload-${index}" style="display: ${service.contentType === 'upload' ? 'block' : 'none'}; margin-top: 15px;">
+                  <h5 style="margin-bottom: 10px;">静态网页上传</h5>
+                  <div class="file-upload-area" onclick="document.getElementById('localServiceFileInput-${index}').click()">
+                    <i class="fas fa-upload"></i>
+                    <h4>上传网页文件</h4>
+                    <p>支持HTML、CSS、JS、图片等文件，最多上传10个文件</p>
+                    <input type="file" id="localServiceFileInput-${index}" multiple accept=".html,.css,.js,.png,.jpg,.jpeg,.gif,.svg,.json,.txt" style="display: none;" onchange="uploadLocalServiceFiles(${index}, this.files)">
+                  </div>
+                  <div class="upload-progress" id="localServiceUploadProgress-${index}"></div>
+                  <div class="upload-status" id="localServiceUploadStatus-${index}"></div>
+                  
+                  <!-- 已上传文件列表 -->
+                  <div style="margin-top: 20px;">
+                    <h5 style="margin-bottom: 10px;">已上传文件</h5>
+                    <div id="localServiceFiles-${index}" style="max-height: 200px; overflow-y: auto; border: 1px solid #e1e5eb; border-radius: var(--border-radius); padding: 10px;">
+                      <!-- 文件列表将由JavaScript动态生成 -->
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 在线编辑选项 -->
+                <div class="local-service-edit" id="local-service-edit-${index}" style="display: ${service.contentType === 'edit' ? 'block' : 'none'}; margin-top: 15px;">
+                  <h5 style="margin-bottom: 10px;">在线编辑</h5>
+                  <div class="form-group">
+                    <label>文件名</label>
+                    <input type="text" class="form-control" id="localServiceFileName-${index}" value="${service.fileName || 'index.html'}" 
+                           onchange="updateServiceField(${index}, 'fileName', this.value)" placeholder="例如: index.html">
+                  </div>
+                  <div class="form-group">
+                    <label>文件内容</label>
+                    <textarea class="form-control" id="localServiceContent-${index}" rows="10" 
+                              onchange="updateServiceField(${index}, 'content', this.value)" 
+                              placeholder="输入HTML、CSS或JavaScript代码">${service.content || '<!DOCTYPE html><html><head><title>本地服务</title></head><body><h1>欢迎使用本地服务</h1><p>这是一个通过在线编辑创建的本地服务页面。</p></body></html>'}</textarea>
+                  </div>
+                  <button class="btn btn-sm btn-primary" onclick="saveLocalServiceContent(${index})" style="margin-top: 10px;">
+                    <i class="fas fa-save"></i> 保存内容
+                  </button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>按钮设置</label>
+                <div id="buttons-${index}">
+                  ${buttonsHTML}
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+                  <button class="btn btn-sm btn-primary" onclick="addButton(${index})" aria-label="添加新按钮">
+                    <i class="fas fa-plus"></i> 添加按钮
+                  </button>
+                  <button class="btn btn-sm btn-secondary" onclick="optimizeButtons(${index})" aria-label="优化按钮设置">
+                    <i class="fas fa-cog"></i> 优化
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+      updateStats();
+    }
+    
+    function toggleService(index) {
+      serviceList[index].expanded = !serviceList[index].expanded;
+      updateServiceUI();
+    }
+    
+    function toggleAllServices(expand) {
+      serviceList.forEach(service => {
+        service.expanded = expand;
+      });
+      updateServiceUI();
+      
+      // 更新按钮文字
+      const expandBtn = document.getElementById('expandAllBtn');
+      const collapseBtn = document.getElementById('collapseAllBtn');
+      
+      if (expand) {
+        expandBtn.innerHTML = '<i class="fas fa-check"></i> 已全部展开';
+        collapseBtn.innerHTML = '<i class="fas fa-compress"></i> 收起全部';
+      } else {
+        expandBtn.innerHTML = '<i class="fas fa-expand"></i> 展开全部';
+        collapseBtn.innerHTML = '<i class="fas fa-check"></i> 已全部收起';
+      }
+    }
+    
+    function addService() {
+      const newId = serviceList.length > 0 ? Math.max(...serviceList.map(s => s.id)) + 1 : 1;
+      serviceList.push({
+        id: newId,
+        name: '新服务',
+        icon: 'fas fa-plus',
+        customIcon: '',
+        category: '默认',
+        buttons: [],
+        expanded: true
+      });
+      updateServiceUI();
+      showMessage('success', '新服务已添加');
+    }
+    
+    function moveServiceUp(index) {
+      if (index <= 0) return;
+      const temp = serviceList[index];
+      serviceList[index] = serviceList[index - 1];
+      serviceList[index - 1] = temp;
+      updateServiceUI();
+      showMessage('success', '服务顺序已调整');
+    }
+    
+    function moveServiceDown(index) {
+      if (index >= serviceList.length - 1) return;
+      const temp = serviceList[index];
+      serviceList[index] = serviceList[index + 1];
+      serviceList[index + 1] = temp;
+      updateServiceUI();
+      showMessage('success', '服务顺序已调整');
+    }
+    
+    function removeService(index) {
+      if (!confirm('确定要删除这个服务吗？')) return;
+      serviceList.splice(index, 1);
+      updateServiceUI();
+      showMessage('success', '服务已删除');
+    }
+    
+    function updateServiceField(index, field, value) {
+      if (serviceList[index]) {
+        serviceList[index][field] = value;
+      }
+    }
+    
+    // ===== 本地服务相关函数 =====
+    function toggleLocalServiceOptions(index, type) {
+      const optionsDiv = document.getElementById(`local-service-options-${index}`);
+      if (type === 'local') {
+        optionsDiv.style.display = 'block';
+        // 加载本地服务文件列表
+        loadLocalServiceFiles(index);
+      } else {
+        optionsDiv.style.display = 'none';
+      }
+    }
+    
+    function toggleLocalServiceContentOptions(index, contentType) {
+      const uploadDiv = document.getElementById(`local-service-upload-${index}`);
+      const editDiv = document.getElementById(`local-service-edit-${index}`);
+      
+      if (contentType === 'upload') {
+        uploadDiv.style.display = 'block';
+        editDiv.style.display = 'none';
+        // 加载已上传文件列表
+        loadLocalServiceFiles(index);
+      } else {
+        uploadDiv.style.display = 'none';
+        editDiv.style.display = 'block';
+      }
+    }
+    
+    function uploadLocalServiceFiles(index, files) {
+      if (!files || files.length === 0) {
+        showMessage('error', '请选择要上传的文件');
+        return;
+      }
+      
+      // 验证文件数量
+      if (files.length > 10) {
+        showMessage('error', '最多只能上传10个文件');
+        return;
+      }
+      
+      const service = serviceList[index];
+      const serviceId = service.id || `service-${index}`;
+      
+      const progress = document.getElementById(`localServiceUploadProgress-${index}`);
+      const status = document.getElementById(`localServiceUploadStatus-${index}`);
+      
+      progress.style.display = 'block';
+      status.style.display = 'block';
+      status.textContent = '上传中...';
+      status.className = 'upload-status';
+      
+      const formData = new FormData();
+      formData.append('serviceId', serviceId);
+      
+      for (let i = 0; i < files.length; i++) {
+        // 验证文件大小
+        if (files[i].size > 10 * 1024 * 1024) {
+          showMessage('error', `${files[i].name} 文件大小超过10MB限制`);
+          progress.style.display = 'none';
+          status.style.display = 'none';
+          return;
+        }
+        formData.append('files', files[i]);
+      }
+      
+      fetch('/api/upload-local-service', {
+        method: 'POST',
+        body: formData
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('网络响应错误');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.code === 200) {
+          status.textContent = data.msg;
+          status.className = 'upload-status success';
+          showMessage('success', data.msg);
+          // 更新服务的本地文件信息
+          if (!service.localFiles) {
+            service.localFiles = [];
+          }
+          service.localFiles.push(...data.data.files);
+          // 加载更新后的文件列表
+          loadLocalServiceFiles(index);
+          
+          // 生成并显示访问按钮
+          const uploadDiv = document.getElementById(`local-service-upload-${index}`);
+          let accessButtonContainer = uploadDiv.querySelector('.access-button-container');
+          if (!accessButtonContainer) {
+            accessButtonContainer = document.createElement('div');
+            accessButtonContainer.className = 'access-button-container';
+            accessButtonContainer.style.marginTop = '15px';
+            accessButtonContainer.style.display = 'flex';
+            accessButtonContainer.style.justifyContent = 'center';
+            uploadDiv.appendChild(accessButtonContainer);
+          }
+          
+          // 查找HTML文件作为主页
+          const htmlFile = data.data.files.find(file => file.name.toLowerCase().endsWith('.html'));
+          const mainFileUrl = htmlFile ? htmlFile.url : data.data.files[0]?.url;
+          
+          if (mainFileUrl) {
+            accessButtonContainer.innerHTML = `
+              <button class="btn btn-primary" onclick="window.open('${mainFileUrl}', '_blank')">
+                <i class="fas fa-external-link-alt"></i> 访问
+              </button>
+            `;
+          }
+        } else {
+          status.textContent = '上传失败: ' + data.msg;
+          status.className = 'upload-status error';
+          showMessage('error', '上传失败: ' + data.msg);
+        }
+        progress.style.display = 'none';
+      })
+      .catch(err => {
+        status.textContent = '上传失败: 网络错误';
+        status.className = 'upload-status error';
+        showMessage('error', '上传失败: 网络错误，请检查网络连接');
+        progress.style.display = 'none';
+      });
+    }
+    
+    function saveLocalServiceContent(index) {
+      const service = serviceList[index];
+      const serviceId = service.id || `service-${index}`;
+      const fileName = document.getElementById(`localServiceFileName-${index}`).value.trim();
+      const content = document.getElementById(`localServiceContent-${index}`).value.trim();
+      
+      if (!fileName) {
+        showMessage('error', '请输入文件名');
+        return;
+      }
+      
+      if (!content) {
+        showMessage('error', '请输入文件内容');
+        return;
+      }
+      
+      // 验证文件名格式
+      if (!/^[a-zA-Z0-9_\-\.]+$/.test(fileName)) {
+        showMessage('error', '文件名只能包含字母、数字、下划线、连字符和点');
+        return;
+      }
+      
+      // 验证文件扩展名
+      const validExtensions = ['.html', '.css', '.js', '.json', '.txt'];
+      const hasValidExtension = validExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+      if (!hasValidExtension) {
+        showMessage('error', '文件名必须包含有效的扩展名，如 .html, .css, .js 等');
+        return;
+      }
+      
+      // 显示保存中提示
+      showMessage('info', '正在保存内容...');
+      
+      fetch('/api/save-local-service-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceId, fileName, content })
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error('网络响应错误');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.code === 200) {
+          // 更新服务信息
+          service.fileName = fileName;
+          service.content = content;
+          service.contentUrl = data.data.url;
+          showMessage('success', '内容保存成功');
+          
+          // 生成并显示访问按钮
+          const editDiv = document.getElementById(`local-service-edit-${index}`);
+          let accessButtonContainer = editDiv.querySelector('.access-button-container');
+          if (!accessButtonContainer) {
+            accessButtonContainer = document.createElement('div');
+            accessButtonContainer.className = 'access-button-container';
+            accessButtonContainer.style.marginTop = '15px';
+            accessButtonContainer.style.display = 'flex';
+            accessButtonContainer.style.justifyContent = 'center';
+            editDiv.appendChild(accessButtonContainer);
+          }
+          
+          accessButtonContainer.innerHTML = `
+            <button class="btn btn-primary" onclick="window.open('${data.data.url}', '_blank')">
+              <i class="fas fa-external-link-alt"></i> 访问
+            </button>
+          `;
+        } else {
+          showMessage('error', '内容保存失败: ' + data.msg);
+        }
+      })
+      .catch(err => {
+        showMessage('error', '内容保存失败: 网络错误，请检查网络连接');
+      });
+    }
+    
+    function loadLocalServiceFiles(index) {
+      const service = serviceList[index];
+      const serviceId = service.id || `service-${index}`;
+      const filesContainer = document.getElementById(`localServiceFiles-${index}`);
+      
+      fetch(`/api/local-service-files/${serviceId}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.code === 200) {
+            if (data.data.length === 0) {
+              filesContainer.innerHTML = '<p style="color: #666; text-align: center;">暂无上传文件</p>';
+            } else {
+              let html = '';
+              data.data.forEach(file => {
+                html += `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #e1e5eb;">
+                    <div>
+                      <span style="font-weight: 500;">${file.name}</span>
+                      <span style="margin-left: 10px; font-size: 0.8rem; color: #666;">${(file.size / 1024).toFixed(2)} KB</span>
+                    </div>
+                    <div>
+                      <a href="${file.url}" target="_blank" class="btn btn-sm btn-primary" style="margin-right: 5px;">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <button class="btn btn-sm btn-danger" onclick="deleteLocalServiceFile(${index}, '${file.name}')">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                `;
+              });
+              filesContainer.innerHTML = html;
+            }
+          } else {
+            filesContainer.innerHTML = `<p style="color: #dc3545; text-align: center;">加载失败: ${data.msg}</p>`;
+          }
+        })
+        .catch(err => {
+          filesContainer.innerHTML = '<p style="color: #dc3545; text-align: center;">加载失败: 网络错误</p>';
+        });
+    }
+    
+    function deleteLocalServiceFile(index, fileName) {
+      const service = serviceList[index];
+      const serviceId = service.id || `service-${index}`;
+      
+      showConfirmDialog(
+        '确认删除文件',
+        `确定要删除文件 "${fileName}" 吗？`,
+        `performDeleteLocalServiceFile(${index}, '${serviceId}', '${fileName}')`
+      );
+    }
+    
+    function performDeleteLocalServiceFile(index, serviceId, fileName) {
+      fetch('/api/delete-local-service-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceId, fileName })
+      }).then(response => response.json())
+        .then(data => {
+          if (data.code === 200) {
+            showMessage('success', '文件删除成功');
+            // 重新加载文件列表
+            loadLocalServiceFiles(index);
+          } else {
+            showMessage('error', '文件删除失败: ' + data.msg);
+          }
+        })
+        .catch(err => {
+          showMessage('error', '文件删除失败: 网络错误');
+        });
+    }
+    
+    function addButton(serviceIndex) {
+      if (serviceList[serviceIndex]) {
+        if (!serviceList[serviceIndex].buttons) {
+          serviceList[serviceIndex].buttons = [];
+        }
+        serviceList[serviceIndex].buttons.push({
+          text: '新按钮',
+          url: '#',
+          ariaLabel: '新按钮'
+        });
+        updateServiceUI();
+      }
+    }
+    
+    function optimizeButtons(index) {
+      const service = serviceList[index];
+      if (!service.buttons) {
+        service.buttons = [];
+      }
+      
+      // 优化现有按钮的可访问性
+      service.buttons.forEach((button, btnIndex) => {
+        if (!button.ariaLabel) {
+          button.ariaLabel = button.text || `按钮${btnIndex + 1}`;
+        }
+        if (!button.url) {
+          button.url = '#';
+        }
+      });
+      
+      // 添加一个默认的访问按钮（如果不存在）
+      const hasAccessButton = service.buttons.some(btn => btn.text === '访问' || btn.ariaLabel === '访问');
+      if (!hasAccessButton) {
+        let accessUrl = '';
+        if (service.contentUrl) {
+          accessUrl = service.contentUrl;
+        } else if (service.localFiles && service.localFiles.length > 0) {
+          const htmlFile = service.localFiles.find(file => file.name.toLowerCase().endsWith('.html'));
+          accessUrl = htmlFile ? htmlFile.url : service.localFiles[0].url;
+        }
+        
+        service.buttons.push({
+          text: '访问',
+          url: accessUrl || '#',
+          ariaLabel: '访问服务',
+          target: '_blank'
+        });
+      }
+      
+      updateServiceUI();
+      showMessage('success', '按钮设置已优化，添加了访问按钮并提升了可访问性');
+    }
+    
+    function removeButton(serviceIndex, buttonIndex) {
+      if (serviceList[serviceIndex] && serviceList[serviceIndex].buttons) {
+        serviceList[serviceIndex].buttons.splice(buttonIndex, 1);
+        updateServiceUI();
+      }
+    }
+    
+    function updateServiceButton(serviceIndex, buttonIndex, field, value) {
+      if (serviceList[serviceIndex] && serviceList[serviceIndex].buttons[buttonIndex]) {
+        serviceList[serviceIndex].buttons[buttonIndex][field] = value;
+        
+        // 如果更新的是文本，同时更新ariaLabel以保持一致性
+        if (field === 'text' && !serviceList[serviceIndex].buttons[buttonIndex].ariaLabel) {
+          serviceList[serviceIndex].buttons[buttonIndex].ariaLabel = value;
+        }
+      }
+    }
+    
+    async function saveServices() {
+      try {
+        // 移除临时的expanded字段
+        const servicesToSave = serviceList.map(({ expanded, ...rest }) => rest);
+        
+        const res = await fetch('/api/save-services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ services: servicesToSave })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+          // 重新加载配置以更新currentConfig
+          await loadConfig();
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        showMessage('error', '服务保存失败');
+      }
+    }
+    
+    // 导出服务配置
+    function exportServices() {
+      try {
+        // 移除临时的expanded字段
+        const servicesToExport = serviceList.map(({ expanded, ...rest }) => rest);
+        const exportData = {
+          services: servicesToExport,
+          exportDate: new Date().toISOString(),
+          version: '1.0'
+        };
+        
+        // 创建JSON文件
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `services-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showMessage('success', '服务配置导出成功');
+      } catch (err) {
+        console.error('导出服务失败:', err);
+        showMessage('error', '导出服务失败');
+      }
+    }
+    
+    // 导入服务配置
+    function importServices(files) {
+      if (!files || files.length === 0) return;
+      
+      const file = files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
+          const importData = JSON.parse(e.target.result);
+          
+          // 验证文件格式
+          if (!importData.services || !Array.isArray(importData.services)) {
+            showMessage('error', '导入文件格式错误，缺少有效的服务列表');
+            return;
+          }
+          
+          // 显示确认对话框
+          showConfirmDialog(
+            '确认导入服务',
+            `确定要导入 ${importData.services.length} 个服务吗？这将覆盖当前的服务配置。`,
+            `confirmImportServices(${JSON.stringify(importData.services)})`
+          );
+        } catch (err) {
+          console.error('解析导入文件失败:', err);
+          showMessage('error', '导入文件解析失败，请确保文件格式正确');
+        }
+      };
+      
+      reader.onerror = function() {
+        showMessage('error', '读取文件失败');
+      };
+      
+      reader.readAsText(file);
+    }
+    
+    // 确认导入服务
+    async function confirmImportServices(importedServices) {
+      try {
+        // 验证服务数据结构
+        const validServices = importedServices.map(service => {
+          // 确保服务对象包含必要的字段
+          return {
+            id: service.id || Math.floor(Math.random() * 1000000),
+            name: service.name || '未命名服务',
+            icon: service.icon || 'fas fa-globe',
+            customIcon: service.customIcon || '',
+            buttons: Array.isArray(service.buttons) ? service.buttons : []
+          };
+        });
+        
+        // 更新服务列表
+        serviceList = validServices;
+        
+        // 保存到服务器
+        const res = await fetch('/api/save-services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ services: validServices })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', `成功导入 ${validServices.length} 个服务`);
+          // 更新UI
+          updateServiceUI();
+          // 重新加载配置
+          await loadConfig();
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        console.error('导入服务失败:', err);
+        showMessage('error', '导入服务失败');
+      }
+    }
+    
+    // 重构添加服务功能为弹窗形式
+    function addService() {
+      // 创建弹窗
+      const dialog = document.createElement('div');
+      dialog.className = 'confirm-dialog';
+      dialog.id = 'addServiceDialog';
+      
+      dialog.innerHTML = `
+        <div class="confirm-dialog-content" style="max-width: 500px; width: 90%;">
+          <div class="confirm-dialog-header">
+            <h3>添加新服务</h3>
+          </div>
+          <div class="confirm-dialog-body">
+            <div class="form-group">
+              <label>服务名称 *</label>
+              <input type="text" id="newServiceName" class="form-control" placeholder="请输入服务名称">
+            </div>
+            <div class="form-group">
+              <label>Font Awesome 图标类名 *</label>
+              <input type="text" id="newServiceIcon" class="form-control" placeholder="例如: fas fa-cloud">
+            </div>
+            <div class="form-group">
+              <label>自定义图标URL（可选）</label>
+              <input type="text" id="newServiceCustomIcon" class="form-control" placeholder="自定义图标的URL地址">
+            </div>
+          </div>
+          <div class="confirm-dialog-actions">
+            <button class="btn-cancel" onclick="document.getElementById('addServiceDialog').remove()">
+              取消
+            </button>
+            <button class="btn-confirm" onclick="submitAddService()">
+              确认添加
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(dialog);
+    }
+    
+    // 提交添加服务
+    async function submitAddService() {
+      const name = document.getElementById('newServiceName').value.trim();
+      const icon = document.getElementById('newServiceIcon').value.trim();
+      const customIcon = document.getElementById('newServiceCustomIcon').value.trim();
+      
+      // 表单验证
+      if (!name) {
+        showMessage('error', '请输入服务名称');
+        return;
+      }
+      
+      if (!icon) {
+        showMessage('error', '请输入图标类名');
+        return;
+      }
+      
+      try {
+        // 创建新服务
+        const newId = serviceList.length > 0 ? Math.max(...serviceList.map(s => s.id)) + 1 : 1;
+        const newService = {
+          id: newId,
+          name: name,
+          icon: icon,
+          customIcon: customIcon,
+          buttons: [],
+          expanded: true
+        };
+        
+        // 添加到服务列表
+        serviceList.push(newService);
+        
+        // 保存到服务器
+        const servicesToSave = serviceList.map(({ expanded, ...rest }) => rest);
+        const res = await fetch('/api/save-services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ services: servicesToSave })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', '服务添加成功');
+          // 更新UI
+          updateServiceUI();
+          // 关闭弹窗
+          document.getElementById('addServiceDialog').remove();
+          // 重新加载配置
+          await loadConfig();
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        console.error('添加服务失败:', err);
+        showMessage('error', '添加服务失败');
+      }
+    }
+    
+    // ===== 图标管理 =====
+    function updateIconsUI() {
+      // 图标总数已在updateStats中更新
+    }
+    
+    // ===== 密码修改 =====
+    async function changePassword() {
+      const oldPwd = document.getElementById('oldPwd').value;
+      const newPwd = document.getElementById('newPwd').value;
+      const confirmPwd = document.getElementById('confirmPwd').value;
+      
+      if (!oldPwd || !newPwd || !confirmPwd) {
+        showMessage('error', '请填写所有密码字段');
+        return;
+      }
+      
+      if (newPwd !== confirmPwd) {
+        showMessage('error', '两次输入的新密码不一致');
+        return;
+      }
+      
+      try {
+        const res = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldPwd, newPwd })
+        });
+        
+        const { code, msg } = await res.json();
+        if (code === 200) {
+          showMessage('success', msg);
+          // 清空密码输入框
+          document.getElementById('oldPwd').value = '';
+          document.getElementById('newPwd').value = '';
+          document.getElementById('confirmPwd').value = '';
+        } else {
+          showMessage('error', msg);
+        }
+      } catch (err) {
+        showMessage('error', '密码修改失败');
+      }
+    }
+    
+    // ===== 界面切换 =====
+    async function switchSection(section) {
+      // 更新菜单激活状态
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      const menuItem = document.querySelector(`[onclick="switchSection('${section}')"]`);
+      if (menuItem) {
+        menuItem.classList.add('active');
+      }
+      
+      // 显示对应内容
+      document.querySelectorAll('.content-section').forEach(el => {
+        el.style.display = 'none';
+      });
+      const sectionEl = document.getElementById(`${section}Section`);
+      if (sectionEl) {
+        sectionEl.style.display = 'block';
+      }
+      
+      // 加载对应页面的数据
+      if (section === 'backup') {
+        await loadBackupConfig();
+        await loadBackupList();
+      }
+    }
+    
+    function refreshData() {
+      loadConfig();
+      showMessage('success', '数据已刷新');
+    }
+    
+    // ===== 初始化 =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // 检查登录状态
+      checkLoginStatus();
+      
+      // 绑定颜色输入框同步
+      ['primaryColor', 'primaryHoverColor', 'backgroundColor', 'cardBgColor'].forEach(id => {
+        const picker = document.getElementById(id);
+        const text = document.getElementById(`${id}Text`);
+        
+        if (picker && text) {
+          picker.addEventListener('input', () => text.value = picker.value);
+          text.addEventListener('input', () => picker.value = text.value);
+        }
+      });
+      
+      // 初始化字体上传
+      initFontUpload();
+      
+      // 初始化阴影预览
+      initShadowPreview();
+      
+      // 加载图标列表
+      loadIconsList();
+      
+      // 回车登录
+      document.getElementById('password').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') login();
+      });
+      
+      // 页面加载时默认显示控制面板
+      if (isLoggedIn) {
+        switchSection('dashboard');
+      }
+    });
+  </script>
+</body>
+</html>

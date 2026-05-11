@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">服务导航中心</title>
+  <link rel="stylesheet" href="/fonts/fontawesome-free-7.1.0-web/css/all.min.css">
+  <style>
+    /* CSS变量 */
+    :root {
+      --primary-color: #2d7ff9;
+      --primary-hover: #1f6ee8;
+      --bg-color: #f5f7fa;
+      --text-color: #333;
+      --card-bg: #fff;
+      --font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      --font-size: 16px;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
+      --border-radius: 20px;
+      /* 毛玻璃效果变量 */
+      --glass-opacity: 0.8;
+      --glass-blur: 10px;
+      --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+    }
+    
+    /* 自定义字体定义 */
+    @font-face {
+      font-family: 'Default Font';
+      src: local('Microsoft YaHei'), local('PingFang SC');
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    /* 基础动画 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes underlineGrow {
+      from { width: 0; opacity: 0; }
+      to { width: 80px; opacity: 1; }
+    }
+    
+    @keyframes breathe {
+      0%, 100% {
+        width: 100px;
+        opacity: 1;
+      }
+      50% {
+        width: 140px;
+        opacity: 0.8;
+      }
+    }
+    
+    @-moz-keyframes breathe {
+      0%, 100% {
+        width: 100px;
+        opacity: 1;
+      }
+      50% {
+        width: 140px;
+        opacity: 0.8;
+      }
+    }
+    
+    @-webkit-keyframes breathe {
+      0%, 100% {
+        width: 100px;
+        opacity: 1;
+      }
+      50% {
+        width: 140px;
+        opacity: 0.8;
+      }
+    }
+    
+    @-o-keyframes breathe {
+      0%, 100% {
+        width: 100px;
+        opacity: 1;
+      }
+      50% {
+        width: 140px;
+        opacity: 0.8;
+      }
+    }
+    
+    /* 背景容器 */
+    .background-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    
+    /* 背景图片 */
+    .background-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    
+    /* 背景视频 */
+    .background-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    
+    /* 背景视频优先级时显示 */
+    .background-container.video-priority .background-video {
+      opacity: 1;
+    }
+    
+    .background-container.video-priority .background-image {
+      opacity: 0;
+    }
+    
+    body {
+      font-family: var(--font-family);
+      font-size: var(--font-size);
+      background: var(--bg-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 100px; /* 增加底部内边距，为页脚留空间 */
+      animation: fadeIn 0.6s ease-out;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    /* 主标题区域 */
+    .title-container {
+      text-align: center;
+      margin-bottom: 60px;
+      width: 100%;
+      position: relative;
+      animation: slideIn 0.8s ease-out;
+    }
+    
+    .main-title {
+      color: #78cbff;
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      display: inline-block;
+      position: relative;
+      padding-bottom: 20px;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0, 200, 255, 0.1);
+    }
+    
+    .title-underline {
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      height: 4px;
+      background: linear-gradient(90deg, #a3dcff, #99d5ff);
+      border-radius: 2px;
+      width: 100px;
+      opacity: 1;
+      animation: breathe 2s ease-in-out infinite;
+    }
+    
+    /* 分类筛选器 */
+    .category-filter {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeIn 0.6s ease-out 0.3s forwards;
+      opacity: 0;
+    }
+    
+    .filter-btn {
+      padding: 10px 20px;
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      color: var(--primary-color);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .filter-btn:hover {
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      transform: translateY(-2px);
+    }
+    
+    .filter-btn.active {
+      background: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.3);
+    }
+    
+    /* 卡片容器 - 每行最多3个，居中排列 */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      width: 100%;
+      max-width: 1200px; /* 限制最大宽度，确保3列居中 */
+      margin: 0 auto;
+      padding: 0 20px;
+      justify-content: center; /* 居中排列 */
+      align-items: start;
+    }
+    
+    /* 服务卡片 */
+    .service-card {
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--border-radius);
+      padding: 35px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.6s ease-out;
+      animation-fill-mode: both;
+      opacity: 0;
+      transform: translateY(20px);
+      will-change: transform, box-shadow;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .service-card:nth-child(1) { animation-delay: 0.1s; }
+    .service-card:nth-child(2) { animation-delay: 0.2s; }
+    .service-card:nth-child(3) { animation-delay: 0.3s; }
+    .service-card:nth-child(4) { animation-delay: 0.4s; }
+    .service-card:nth-child(5) { animation-delay: 0.5s; }
+    .service-card:nth-child(6) { animation-delay: 0.6s; }
+    
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+    
+    .service-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      background: var(--glass-gradient);
+      backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px));
+    }
+    
+    .service-card:hover::before {
+      transform: scaleX(1);
+    }
+    
+    /* 图标区域 */
+    .card-icon-wrapper {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 25px;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    
+    .service-card:hover .card-icon-wrapper {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .card-icon {
+      font-size: 3.5rem;
+      color: var(--primary-color);
+      transition: all 0.3s ease;
+    }
+    
+    .custom-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .service-card:hover .custom-icon {
+      transform: scale(1.05);
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    }
+    
+    /* 卡片内容 */
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-color);
+      margin-bottom: 20px;
+      line-height: 1.4;
+      transition: color 0.3s ease;
+    }
+    
+    .service-card:hover .card-title {
+      color: var(--primary-color);
+    }
+    
+    /* 按钮组 */
+    .card-buttons {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    
+    .card-btn {
+      position: relative;
+      padding: 12px 35px;
+      background: var(--primary-color);
+      font-size: 17px;
+      font-weight: 500;
+      color: white;
+      border: 3px solid var(--primary-color);
+      border-radius: 8px;
+      box-shadow: 0 0 0 rgba(45, 127, 249, 0.5);
+      transition: all 0.3s ease-in-out;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      min-width: 120px;
+      text-align: center;
+      display: inline-block;
+    }
+    
+    .star-1 {
+      position: absolute;
+      top: 20%;
+      left: 20%;
+      width: 25px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 1s cubic-bezier(0.05, 0.83, 0.43, 0.96);
+    }
+    
+    .star-2 {
+      position: absolute;
+      top: 45%;
+      left: 45%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 1s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-3 {
+      position: absolute;
+      top: 40%;
+      left: 40%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 1s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-4 {
+      position: absolute;
+      top: 20%;
+      left: 40%;
+      width: 8px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 0.8s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-5 {
+      position: absolute;
+      top: 25%;
+      left: 45%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 0.6s cubic-bezier(0, 0.4, 0, 1.01);
+    }
+    
+    .star-6 {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 0 #fffdef);
+      z-index: -5;
+      transition: all 0.8s ease;
+    }
+    
+    .card-btn:hover {
+      background: transparent;
+      color: var(--primary-color);
+      box-shadow: 0 0 25px rgba(45, 127, 249, 0.5);
+    }
+    
+    .card-btn:hover .star-1 {
+      position: absolute;
+      top: -80%;
+      left: -30%;
+      width: 25px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .card-btn:hover .star-2 {
+      position: absolute;
+      top: -25%;
+      left: 10%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .card-btn:hover .star-3 {
+      position: absolute;
+      top: 55%;
+      left: 25%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .card-btn:hover .star-4 {
+      position: absolute;
+      top: 30%;
+      left: 80%;
+      width: 8px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .card-btn:hover .star-5 {
+      position: absolute;
+      top: 25%;
+      left: 115%;
+      width: 15px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .card-btn:hover .star-6 {
+      position: absolute;
+      top: 5%;
+      left: 60%;
+      width: 5px;
+      height: auto;
+      filter: drop-shadow(0 0 10px #fffdef);
+      z-index: 2;
+    }
+    
+    .fil0 {
+      fill: #fffdef;
+    }
+    
+    /* 页脚 - 作者和管理按钮 */
+    .page-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 15px 20px;
+      text-align: center;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+    }
+    
+    .footer-content {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 14px;
+      color: white;
+    }
+    
+    .author-text {
+      font-size: 14px;
+      color: #a3dcff;
+    }
+    
+    .admin-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--primary-color);
+      transition: all 0.3s ease;
+      font-size: 14px;
+    }
+    
+    .admin-link:hover {
+      background: var(--primary-color);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.2);
+    }
+    
+    .separator {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* 分类筛选器 */
+    .category-filter {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    
+    .filter-btn {
+      padding: 10px 20px;
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      font-family: var(--font-family);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .filter-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.2);
+    }
+    
+    .filter-btn.active {
+      background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+      color: white;
+      border-color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(45, 127, 249, 0.3);
+    }
+    
+    /* 无服务提示 */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 40px;
+      background: var(--glass-gradient);
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.6s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .empty-state i {
+      font-size: 4rem;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+    
+    .empty-state h3 {
+      font-size: 1.8rem;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+      color: #888;
+      font-size: 1.1rem;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 1200px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+        max-width: 800px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 30px 15px 90px;
+      }
+      
+      .main-title {
+        font-size: 2.2rem;
+        padding-bottom: 15px;
+      }
+      
+      .title-container {
+        margin-bottom: 40px;
+      }
+      
+      .cards-grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        padding: 0;
+        gap: 25px;
+      }
+      
+      .service-card {
+        padding: 30px 25px;
+      }
+      
+      .card-icon-wrapper {
+        width: 90px;
+        height: 90px;
+        margin-bottom: 20px;
+      }
+      
+      .card-title {
+        font-size: 1.3rem;
+      }
+      
+      .card-btn {
+        padding: 10px 20px;
+        min-width: 110px;
+        font-size: 0.95rem;
+      }
+      
+      .page-footer {
+        padding: 12px 15px;
+      }
+      
+      .footer-content {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .separator {
+        display: none;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .main-title {
+        font-size: 1.8rem;
+      }
+      
+      .service-card {
+        padding: 25px 20px;
+      }
+      
+      .card-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .card-btn {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+    
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景容器 -->
+  <div class="background-container" id="backgroundContainer">
+    <img src="" alt="背景图片" class="background-image" id="backgroundImage">
+    <video autoplay muted loop class="background-video" id="backgroundVideo">
+      <source src="" type="video/mp4">
+    </video>
+  </div>
+  
+  <!-- 主标题区域 -->
+  <div class="title-container">
+    <h1 class="main-title" id="mainTitle">服务导航中心</h1>
+    <div class="title-underline"></div>
+  </div>
+  
+  <!-- 分类筛选器 -->
+  <div class="category-filter" id="categoryFilter">
+    <button class="filter-btn active" data-category="all">全部</button>
+  </div>
+  
+  <!-- 卡片网格 -->
+  <div class="cards-grid" id="cardsContainer"></div>
+  
+  <!-- 页脚 - 作者和管理按钮 -->
+  <div class="page-footer">
+    <div class="footer-content">
+      <span class="author-text">by 墨尘</span>
+      <span class="separator">|</span>
+      <a href="/admin.html" class="admin-link">管理</a>
+    </div>
+  </div>
+
+  <script>
+    // 全局配置
+    let currentConfig = {
+      theme: {},
+      services: [],
+      titles: {}
+    };
+    
+    let isLoading = false;
+    let lastConfigHash = '';
+    let loadedFonts = new Set();
+    
+    // 计算配置哈希，用于检测配置是否变化
+    function calculateConfigHash(config) {
+      return JSON.stringify({
+        titles: config.titles,
+        theme: config.theme,
+        servicesCount: config.services?.length || 0
+      });
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+      
+      // 优化刷新策略：只在配置变化时刷新
+      setInterval(() => {
+        if (!isLoading) {
+          loadConfig();
+        }
+      }, 5000);
+    });
+    
+    // 加载配置
+    async function loadConfig() {
+      if (isLoading) return;
+      
+      isLoading = true;
+      try {
+        const res = await fetch('/api/config');
+        const { code, data } = await res.json();
+        
+        if (code === 200) {
+          const newHash = calculateConfigHash(data);
+          
+          // 只有配置变化时才更新UI
+          if (newHash !== lastConfigHash) {
+            currentConfig = data;
+            lastConfigHash = newHash;
+            
+            // 应用配置
+            await applyTheme(data.theme);
+            applyTitles(data.titles);
+            updateCategoryFilter(data.services);
+            renderServices(data.services);
+          }
+        }
+      } catch (err) {
+        console.error('配置加载失败：', err);
+      } finally {
+        isLoading = false;
+      }
+    }
+    
+    // 十六进制颜色转RGB
+    function hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+    }
+    
+    // 应用主题
+    async function applyTheme(theme) {
+      if (!theme) return;
+      
+      const root = document.documentElement;
+      
+      // 设置CSS变量
+      root.style.setProperty('--primary-color', theme.primaryColor || '#2d7ff9');
+      root.style.setProperty('--primary-hover', theme.primaryHoverColor || '#1f6ee8');
+      root.style.setProperty('--bg-color', theme.backgroundColor || '#f5f7fa');
+      root.style.setProperty('--card-bg', theme.cardBgColor || '#fff');
+      root.style.setProperty('--font-family', theme.fontFamily || '"Microsoft YaHei", "PingFang SC", sans-serif');
+      root.style.setProperty('--font-size', theme.fontSize || '16px');
+      root.style.setProperty('--shadow', theme.cardShadow || '0 4px 12px rgba(0, 0, 0, 0.08)');
+      root.style.setProperty('--shadow-hover', theme.cardHoverShadow || '0 8px 20px rgba(0, 0, 0, 0.12)');
+      
+      // 应用毛玻璃效果设置
+      const glassOpacity = theme.glassOpacity || 80;
+      const glassBlur = theme.glassBlur || 10;
+      const glassColor1 = theme.glassColor1 || '#ffffff';
+      const glassColor2 = theme.glassColor2 || '#ffffff';
+      const opacity = glassOpacity / 100;
+      
+      root.style.setProperty('--glass-opacity', opacity);
+      root.style.setProperty('--glass-blur', glassBlur + 'px');
+      
+      // 生成渐变
+      const gradient = `linear-gradient(135deg, rgba(${hexToRgb(glassColor1)}, ${opacity}), rgba(${hexToRgb(glassColor2)}, ${opacity * 0.5}))`;
+      root.style.setProperty('--glass-gradient', gradient);
+      
+      // 应用背景设置
+      const backgroundOpacity = theme.backgroundOpacity || 100;
+      const backgroundImage = theme.backgroundImage || '';
+      const backgroundVideo = theme.backgroundVideo || '';
+      const backgroundPriority = theme.backgroundPriority || 'video';
+      
+      // 更新背景容器
+      const backgroundContainer = document.getElementById('backgroundContainer');
+      const backgroundImageElement = document.getElementById('backgroundImage');
+      const backgroundVideoElement = document.getElementById('backgroundVideo');
+      const backgroundVideoSource = backgroundVideoElement.querySelector('source');
+      
+      // 设置背景优先级
+      backgroundContainer.className = `background-container ${backgroundPriority === 'video' ? 'video-priority' : ''}`;
+      
+      // 设置背景不透明度
+      const bgOpacity = backgroundOpacity / 100;
+      backgroundImageElement.style.opacity = bgOpacity;
+      backgroundVideoElement.style.opacity = bgOpacity;
+      
+      // 设置背景图片
+      if (backgroundImage) {
+        backgroundImageElement.src = backgroundImage + '?t=' + Date.now();
+        backgroundImageElement.style.display = 'block';
+      } else {
+        backgroundImageElement.src = '';
+        backgroundImageElement.style.display = 'none';
+      }
+      
+      // 设置背景视频
+      if (backgroundVideo) {
+        backgroundVideoSource.src = backgroundVideo + '?t=' + Date.now();
+        backgroundVideoElement.load();
+        backgroundVideoElement.style.display = 'block';
+      } else {
+        backgroundVideoSource.src = '';
+        backgroundVideoElement.load();
+        backgroundVideoElement.style.display = 'none';
+      }
+      
+      // 加载自定义字体
+      if (theme.customFonts && Array.isArray(theme.customFonts)) {
+        const fontPromises = [];
+        
+        theme.customFonts.forEach(font => {
+          if (font.url && font.family && !loadedFonts.has(font.name)) {
+            // 创建font-face
+            const fontFace = new FontFace(font.name, `url(${font.url})`);
+            loadedFonts.add(font.name);
+            fontPromises.push(
+              fontFace.load().then(() => {
+                document.fonts.add(fontFace);
+              }).catch(err => {
+                console.error('字体加载失败：', err);
+                loadedFonts.delete(font.name);
+              })
+            );
+          }
+        });
+        
+        // 等待所有字体加载完成
+        await Promise.all(fontPromises);
+      }
+      
+      // 如果设置了自定义字体，应用到页面
+      if (theme.fontFamily && theme.fontFamily !== 'Microsoft YaHei, PingFang SC, sans-serif') {
+        // 检查是否是自定义字体
+        const isCustomFont = theme.customFonts?.some(font => 
+          font.family === theme.fontFamily
+        );
+        
+        if (isCustomFont) {
+          // 提取字体名称
+          const fontName = theme.fontFamily.split("'")[1] || theme.fontFamily.split(',')[0];
+          if (loadedFonts.has(fontName)) {
+            // 应用自定义字体
+            root.style.setProperty('--font-family', theme.fontFamily);
+          }
+        }
+      }
+    }
+    
+    // 应用标题
+    function applyTitles(titles) {
+      if (!titles) return;
+      
+      if (titles.mainNavTitle) {
+        document.getElementById('pageTitle').textContent = titles.mainNavTitle;
+      }
+      
+      if (titles.mainContentTitle) {
+        document.getElementById('mainTitle').textContent = titles.mainContentTitle;
+      }
+    }
+    
+    // 渲染服务卡片
+    function renderServices(services, filterCategory = 'all') {
+      const container = document.getElementById('cardsContainer');
+      
+      if (!services || services.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>暂无服务配置</h3>
+            <p>请在管理后台添加您的第一个服务</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 按分类筛选
+      const filteredServices = filterCategory === 'all' 
+        ? services 
+        : services.filter(service => service.category === filterCategory);
+      
+      if (filteredServices.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-filter"></i>
+            <h3>该分类暂无服务</h3>
+            <p>请选择其他分类或在管理后台添加服务</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 生成卡片HTML
+      const cardsHTML = filteredServices.map((service, index) => {
+        const hasCustomIcon = service.customIcon && service.customIcon.trim() !== '';
+        const iconHTML = hasCustomIcon 
+          ? `<img src="${service.customIcon}?t=${Date.now()}" alt="${service.name}" class="custom-icon" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\"fas fa-globe card-icon\"></i>';" loading="lazy">`
+          : `<i class="${service.icon || 'fas fa-globe'} card-icon"></i>`;
+        
+        const buttonsHTML = (service.buttons || []).map(btn => `
+          <a href="${btn.url || '#'}" target="_blank" rel="noopener noreferrer" class="card-btn">
+            ${btn.text || '访问'}
+            <div class="star-1">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-2">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-3">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-4">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-5">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+            <div class="star-6">
+              <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs></defs>
+                <g id="Layer_x0020_1">
+                  <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                  <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                </g>
+              </svg>
+            </div>
+          </a>
+        `).join('');
+        
+        return `
+          <div class="service-card" style="animation-delay: ${index * 0.1}s;">
+            <div class="card-icon-wrapper">
+              ${iconHTML}
+            </div>
+            <h3 class="card-title">${service.name || '未命名服务'}</h3>
+            <div class="card-buttons">
+              ${buttonsHTML}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // 使用requestAnimationFrame更新DOM
+      requestAnimationFrame(() => {
+        container.innerHTML = cardsHTML;
+      });
+    }
+    
+    // 更新分类筛选器
+    function updateCategoryFilter(services) {
+      const filterContainer = document.getElementById('categoryFilter');
+      const categories = ['all', ...new Set(services.map(service => service.category).filter(Boolean))];
+      
+      // 清空现有筛选器
+      filterContainer.innerHTML = '';
+      
+      // 添加分类按钮
+      categories.forEach(category => {
+        const button = document.createElement('button');
+        button.className = `filter-btn ${category === 'all' ? 'active' : ''}`;
+        button.dataset.category = category;
+        button.textContent = category === 'all' ? '全部' : category;
+        button.addEventListener('click', () => {
+          // 更新激活状态
+          document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+          // 按分类筛选
+          renderServices(services, category);
+        });
+        filterContainer.appendChild(button);
+      });
+    }
+    
+    // 错误处理
+    window.addEventListener('error', (event) => {
+      console.error('页面错误：', event.error);
+    });
+    
+    // 服务状态管理
+    let serviceStatus = new Map(); // 存储服务状态
+    let lastCheckTime = 0; // 上次检查时间
+    const CHECK_INTERVAL = 30000; // 检查间隔（30秒）
+    const REQUEST_TIMEOUT = 5000; // 请求超时时间（5秒）
+    let serviceLogs = []; // 存储服务探测日志
+    const MAX_LOGS = 100; // 最大日志数量
+    
+    // 服务可用性探测
+    async function checkServiceStatus() {
+      const now = Date.now();
+      if (now - lastCheckTime < CHECK_INTERVAL) return;
+      lastCheckTime = now;
+      
+      const services = currentConfig.services || [];
+      const autoDetectServices = services.filter(service => service.autoDetect);
+      
+      if (autoDetectServices.length === 0) return;
+      
+      logServiceEvent('info', `开始检查 ${autoDetectServices.length} 个服务的可用性`);
+      console.log(`开始检查 ${autoDetectServices.length} 个服务的可用性`);
+      
+      for (const service of autoDetectServices) {
+        if (service.buttons && service.buttons.length > 0) {
+          for (const button of service.buttons) {
+            if (button.url && button.url.startsWith('http')) {
+              const serviceKey = `${service.id}-${button.url}`;
+              try {
+                const isAvailable = await testService(button.url);
+                const previousStatus = serviceStatus.get(serviceKey);
+                
+                if (isAvailable !== previousStatus) {
+                  serviceStatus.set(serviceKey, isAvailable);
+                  const statusText = isAvailable ? '可用' : '不可用';
+                  logServiceEvent('info', `${service.name} - ${button.text}: ${statusText}`);
+                  console.log(`${service.name} - ${button.text}: ${statusText}`);
+                  // 重新渲染服务卡片
+                  renderServices(currentConfig.services);
+                }
+              } catch (error) {
+                const errorMessage = error.message || '未知错误';
+                logServiceEvent('error', `检查服务 ${service.name} 失败: ${errorMessage}`);
+                console.error(`检查服务 ${service.name} 失败:`, error);
+                serviceStatus.set(serviceKey, false);
+                // 重新渲染服务卡片
+                renderServices(currentConfig.services);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // 记录服务事件日志
+    function logServiceEvent(level, message) {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        level,
+        message
+      };
+      
+      serviceLogs.push(logEntry);
+      
+      // 限制日志数量
+      if (serviceLogs.length > MAX_LOGS) {
+        serviceLogs.shift();
+      }
+      
+      // 可以根据需要将日志发送到服务器或存储到本地存储
+      // 这里仅在控制台显示
+      if (level === 'error') {
+        console.error(`[${logEntry.timestamp}] ${level.toUpperCase()}: ${message}`);
+      } else {
+        console.log(`[${logEntry.timestamp}] ${level.toUpperCase()}: ${message}`);
+      }
+    }
+    
+    // 测试服务可用性
+    async function testService(url) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+        
+        const response = await fetch(url, {
+          method: 'HEAD',
+          mode: 'no-cors',
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        // 对于 no-cors 请求，response.ok 始终为 false，但如果能完成请求，说明服务可访问
+        return true;
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.warn(`服务 ${url} 响应超时`);
+        }
+        return false;
+      }
+    }
+    
+    // 修改渲染服务卡片的函数，根据服务状态决定是否显示
+    function renderServices(services, filterCategory = 'all') {
+      const container = document.getElementById('cardsContainer');
+      
+      if (!services || services.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>暂无服务配置</h3>
+            <p>请在管理后台添加您的第一个服务</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 按分类筛选
+      const filteredServices = filterCategory === 'all' 
+        ? services 
+        : services.filter(service => service.category === filterCategory);
+      
+      if (filteredServices.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-filter"></i>
+            <h3>该分类暂无服务</h3>
+            <p>请选择其他分类或在管理后台添加服务</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 过滤掉不可用的服务
+      const availableServices = filteredServices.filter(service => {
+        // 如果服务没有开启自动探测，或者没有按钮，默认显示
+        if (!service.autoDetect || !service.buttons || service.buttons.length === 0) {
+          return true;
+        }
+        
+        // 检查服务的所有按钮是否都不可用
+        const allUnavailable = service.buttons.every(button => {
+          if (!button.url || !button.url.startsWith('http')) {
+            return false; // 非HTTP链接不影响服务显示
+          }
+          const serviceKey = `${service.id}-${button.url}`;
+          return !serviceStatus.get(serviceKey);
+        });
+        
+        return !allUnavailable;
+      });
+      
+      if (availableServices.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>所有服务当前不可用</h3>
+            <p>请检查网络连接或服务状态</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 生成卡片HTML
+      const cardsHTML = availableServices.map((service, index) => {
+        const hasCustomIcon = service.customIcon && service.customIcon.trim() !== '';
+        const iconHTML = hasCustomIcon 
+          ? `<img src="${service.customIcon}?t=${Date.now()}" alt="${service.name}" class="custom-icon" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=\"fas fa-globe card-icon\"></i>';" loading="lazy">`
+          : `<i class="${service.icon || 'fas fa-globe'} card-icon"></i>`;
+        
+        const buttonsHTML = (service.buttons || []).map(btn => {
+          // 检查按钮链接是否可用
+          let isButtonAvailable = true;
+          if (service.autoDetect && btn.url && btn.url.startsWith('http')) {
+            const serviceKey = `${service.id}-${btn.url}`;
+            isButtonAvailable = serviceStatus.get(serviceKey) !== false;
+          }
+          
+          // 如果按钮不可用，不显示该按钮
+          if (!isButtonAvailable) {
+            return '';
+          }
+          
+          return `
+            <a href="${btn.url || '#'}" target="_blank" rel="noopener noreferrer" class="card-btn">
+              ${btn.text || '访问'}
+              <div class="star-1">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <defs></defs>
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                  </g>
+                </svg>
+              </div>
+              <div class="star-2">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <defs></defs>
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                  </g>
+                </svg>
+              </div>
+              <div class="star-3">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <defs></defs>
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                  </g>
+                </svg>
+              </div>
+              <div class="star-4">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <defs></defs>
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                  </g>
+                </svg>
+              </div>
+              <div class="star-5">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <defs></defs>
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                  </g>
+                </svg>
+              </div>
+              <div class="star-6">
+                <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.1" style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd" viewBox="0 0 784.11 815.53" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <defs></defs>
+                  <g id="Layer_x0020_1">
+                    <metadata id="CorelCorpID_0Corel-Layer"></metadata>
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z"></path>
+                  </g>
+                </svg>
+              </div>
+            </a>
+          `;
+        }).join('');
+        
+        return `
+          <div class="service-card" style="animation-delay: ${index * 0.1}s;">
+            <div class="card-icon-wrapper">
+              ${iconHTML}
+            </div>
+            <h3 class="card-title">${service.name || '未命名服务'}</h3>
+            <div class="card-buttons">
+              ${buttonsHTML}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // 使用requestAnimationFrame更新DOM
+      requestAnimationFrame(() => {
+        container.innerHTML = cardsHTML;
+      });
+    }
+    
+    // 添加服务状态检查到初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadConfig();
+      
+      // 优化刷新策略：只在配置变化时刷新
+      setInterval(() => {
+        if (!isLoading) {
+          loadConfig();
+          checkServiceStatus();
+        }
+      }, 5000);
+    });
+    
+    // 处理图片加载错误
+    document.addEventListener('error', (event) => {
+      if (event.target.tagName === 'IMG') {
+        const img = event.target;
+        if (img.classList.contains('custom-icon')) {
+          img.style.display = 'none';
+          const wrapper = img.parentElement;
+          wrapper.innerHTML = '<i class="fas fa-globe card-icon"></i>';
+        }
+      }
+    }, true);
+  </script>
+</body>
+</html>
