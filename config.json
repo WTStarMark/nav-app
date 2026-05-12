@@ -9,7 +9,7 @@
   "theme": {
     "primaryColor": "#7adeff",
     "primaryHoverColor": "#7ad7ff",
-    "backgroundColor": "#f5f7fa",
+    "backgroundColor": "#dbf0ff",
     "cardBgColor": "#ff0000",
     "cardShadow": "0 4px 12px rgba(0, 0, 0, 0.08)",
     "cardHoverShadow": "0 8px 20px rgba(0, 0, 0, 0.12)",
@@ -29,7 +29,7 @@
     "glassColor2": "#c7f1ff",
     "backgroundOpacity": "100",
     "backgroundImage": "",
-    "backgroundVideo": "/videos/1772084504058-4K20.mp4",
+    "backgroundVideo": "",
     "backgroundPriority": "video",
     "textColor": "#333333",
     "secondaryTextColor": "#666666",
