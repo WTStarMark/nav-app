@@ -5,7 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 
 const app = express();
-const PORT = 8080;
+const PORT = 80;
 const CONFIG_PATH = path.join(__dirname, 'config.json');
 const BACKUP_DIR = path.join(__dirname, 'backups');
 const ICON_UPLOAD_DIR = path.join(__dirname, 'public/icons');

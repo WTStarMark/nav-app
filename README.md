@@ -124,9 +124,9 @@ npm run dev
 
 > **💡 提示**：80 端口为默认 HTTP 端口。如需修改端口，请编辑 `server.js` 中的 `PORT` 常量。
 
-### Windows 一键启动
+### Windows 一键启动（仅启动）
 
-项目提供了 `open.bat` 脚本，双击即可在后台静默启动服务。
+项目提供了 `start.bat` 脚本，双击即可在后台静默启动服务。
 
 ***
 
@@ -237,8 +237,7 @@ nav-app/
 ├── package-lock.json         # 依赖锁定文件
 ├── config.json               # 核心配置文件（主题/服务/密码/备份）
 ├── .npmrc                    # npm 镜像源配置
-├── open.bat                  # Windows 一键启动脚本（隐藏窗口）
-├── run.bat                   # 运行启动脚本
+├── start.bat                  # Windows 启动脚本（隐藏窗口）
 │
 ├── backups/                  # 自动备份目录
 │   └── backup-YYYY-MM-DD-HH-MM-SS.json
@@ -258,7 +257,7 @@ nav-app/
             ├── js/
             ├── webfonts/
             └── metadata/
-                └── icons.json         # 图标元数据（4.4MB）
+                └── icons.json         # 图标元数据
 ```
 
 ***
@@ -269,7 +268,7 @@ nav-app/
 
 | 配置项             | 类型     | 说明                                    |
 | --------------- | ------ | ------------------------------------- |
-| `adminPassword` | string | 管理员密码                                 |
+| `adminPassword` | string | 管理员密码（默认admin123）                     |
 | `titles`        | object | 页面标题配置（导航/主内容/管理导航/管理内容）              |
 | `theme`         | object | 主题配置（颜色/字体/毛玻璃/背景等）                   |
 | `services`      | array  | 服务列表，每个服务包含名称、图标、分类、按钮等               |
